@@ -68,7 +68,7 @@ def downgrade():
     pass
 
 def crack(cap_file):
-    aircrack_cmd = ["aircrack-ng", "-w", "rockyou.txt", cap_file]
+    aircrack_cmd = ["aircrack-ng", "-w", "Wordlists/rockyou.txt", cap_file]
     aircrack_proc = subprocess.run(aircrack_cmd, text=True, capture_output=True)
     print(aircrack_proc.stdout)
 
