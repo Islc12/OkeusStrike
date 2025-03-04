@@ -23,16 +23,16 @@ Contact: richrsmith@proton.me
 
 ### Installation and setup instructions:
 ```
-$ git clone https://github.com/Islc12/Air_H4ck.git
-$ cd Air_H4ck
+$ git clone https://github.com/Islc12/WiFiSecAudit.git
+$ cd WifiSecAudit
 $ chmod u+x config.sh
 $ ./config.sh
 ```
 
 ### Running the script:
 ```
-# cd Air_H4ck
-# ./air_hack.py
+# cd WifiSecAudit
+# ./main.py
 ```
 
 -------------------------------------------------------------------------------------------------------------------------------------------
