@@ -4,12 +4,19 @@
 
 ### Disclaimer
 
-This project includes the `rockyou.txt` wordlist for use with the `aircrack_ng` suite for educational and security testing purposes only.
-Unauthorized use of this script or the wordlist to attack systems without permission is illegal and unethical. The creator of this
-repository is not responsible for any misuse of the provided tools. Ensure you have explicit permission from the owner of any system you
-are testing.
+This script is intended for educational and research purposes only. It is the responsibility of the user to ensure that their actions
+comply with all applicable laws and regulations. The author and contributors of this script are not responsible for any misuse or illegal
+activities conducted using this script. The use of this script for any illegal or unauthorized activities is strictly prohibited.
 
-By using this repository, you agree to use it responsibly and comply with all relevant laws and regulations.
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+## Wordlist Usage
+This script requires a wordlist for brute-force attacks. Due to licensing concerns, `rockyou.txt` is **not included** in this repository.  
+However, you can obtain it from a Kali Linux installation or other legal sources:  
+
+- **Kali Linux Path:** `/usr/share/wordlists/rockyou.txt.gz` (extract using `gunzip rockyou.txt.gz`)  
+- **Online:** Various security research repositories provide commonly used wordlists.  
+- **Custom Wordlist:** You can specify any wordlist file when running the script.  
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 

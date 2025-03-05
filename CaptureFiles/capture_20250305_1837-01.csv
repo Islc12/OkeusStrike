@@ -1,0 +1,9 @@
+
+BSSID, First time seen, Last time seen, channel, Speed, Privacy, Cipher, Authentication, Power, # beacons, # IV, LAN IP, ID-length, ESSID, Key
+EA:42:A1:02:19:3F, 2025-03-05 18:37:09, 2025-03-05 18:37:15,  3, 360, WPA3 WPA2, CCMP, SAE PSK, -15,       11,        2,   0.  0.  0.  0,   8, Rico-IOT, 
+A8:42:A1:02:19:3F, 2025-03-05 18:37:09, 2025-03-05 18:37:15,  3, 360, WPA3 WPA2, CCMP, SAE PSK, -15,        8,        0,   0.  0.  0.  0,   7, Skipper, 
+AA:42:A1:02:19:3F, 2025-03-05 18:37:09, 2025-03-05 18:37:15,  3, 360, WPA2, CCMP, PSK, -16,       10,        0,   0.  0.  0.  0,   8, Kowalski, 
+C0:18:03:E0:16:01, 2025-03-05 18:37:09, 2025-03-05 18:37:15,  3,  65, WPA2, CCMP, PSK, -33,        6,        0,   0.  0.  0.  0,  32, DIRECT-00-HP DeskJet 2700 series, 
+
+Station MAC, First time seen, Last time seen, Power, # packets, BSSID, Probed ESSIDs
+
