@@ -1,3 +1,3 @@
 Wordlists/
-  For testing purposes I decompressed the rockyou wordlist on my end, to keep from having to compress it after every test we're just ignoring any changes to this directory for now.
+#For testing purposes I decompressed the rockyou wordlist on my end, to keep from having to compress it after every test we're just ignoring any changes to this directory for now.
 __pycache__/
