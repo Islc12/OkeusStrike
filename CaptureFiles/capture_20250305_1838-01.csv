@@ -1,8 +1,0 @@
-
-BSSID, First time seen, Last time seen, channel, Speed, Privacy, Cipher, Authentication, Power, # beacons, # IV, LAN IP, ID-length, ESSID, Key
-AA:42:A1:02:19:3F, 2025-03-05 18:38:23, 2025-03-05 18:38:25,  3, 360, WPA2, CCMP, PSK, -16,        5,        0,   0.  0.  0.  0,   8, Kowalski, 
-EA:42:A1:02:19:3F, 2025-03-05 18:38:23, 2025-03-05 18:38:25,  3, 360, WPA3 WPA2, CCMP, SAE PSK, -16,        6,        1,   0.  0.  0.  0,   8, Rico-IOT, 
-A8:42:A1:02:19:3F, 2025-03-05 18:38:24, 2025-03-05 18:38:25,  3, 360, WPA3 WPA2, CCMP, SAE PSK, -16,        5,        0,   0.  0.  0.  0,   7, Skipper, 
-
-Station MAC, First time seen, Last time seen, Power, # packets, BSSID, Probed ESSIDs
-

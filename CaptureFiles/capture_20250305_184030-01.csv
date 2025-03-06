@@ -1,7 +1,0 @@
-
-BSSID, First time seen, Last time seen, channel, Speed, Privacy, Cipher, Authentication, Power, # beacons, # IV, LAN IP, ID-length, ESSID, Key
-AA:42:A1:02:19:3F, 2025-03-05 18:40:38, 2025-03-05 18:41:11,  3, 360, WPA2, CCMP, PSK, -14,      321,       61,   0.  0.  0.  0,   8, Kowalski, 
-
-Station MAC, First time seen, Last time seen, Power, # packets, BSSID, Probed ESSIDs
-82:45:EE:9E:43:25, 2025-03-05 18:40:38, 2025-03-05 18:41:10, -29,      164, AA:42:A1:02:19:3F,
-
