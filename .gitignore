@@ -2,3 +2,4 @@ Wordlists1/
 # For liscensing purposes I removed the wordlists from this repository. However at this time I am leaving the Wordlist directory here to help me with testing.
 # If you would like to use the wordlists from this repository, please see the README.md file for instructions on how to download them.
 __pycache__/
+CaptureFiles/
