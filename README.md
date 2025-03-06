@@ -10,21 +10,32 @@ activities conducted using this script. The use of this script for any illegal o
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 
+### Author: Rich Smith (Islc12)
+
+### Written: Feburary 2025
+
+### Contact: richrsmith@proton.me
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+### License
+This project is licensed under the **GNU General Public License v3.0** - see the [LICENSE](LICENSE) file for details.
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+### Installation Instructions
+
+`pip install -r requirements.txt`
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
 ## Wordlist Usage
 This script requires a wordlist for brute-force attacks. Due to licensing concerns, `rockyou.txt` is **not included** in this repository.  
 However, you can obtain it from a Kali Linux installation or other legal sources:  
 
 - **Kali Linux Path:** `/usr/share/wordlists/rockyou.txt.gz` (extract using `gunzip rockyou.txt.gz`)  
 - **Online:** Various security research repositories provide commonly used wordlists.  
-- **Custom Wordlist:** You can specify any wordlist file when running the script.  
-
--------------------------------------------------------------------------------------------------------------------------------------------
-
-Author: Rich Smith
-
-Written: Feburary 2025
-
-Contact: richrsmith@proton.me
+- **Custom Wordlist:** You can specify any wordlist file when running the script. 
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -70,3 +81,12 @@ the rockyou wordlist a capture file with the date and time (example: `capture_20
 8. Give option to use MAC address spoofing
 9. Give option to use a custom wordlist
 10. Reveal hidden SSID's
+11. Create a log file that documents each step taken during the audit for future reference when writing your report
+
+MUCH LATER ON - potential useful features
+1. Add a location tracking feature to document GPS coordinates of where the audit was performed
+    - This could be a useful feature if performing an audit on a large scale such as a warehouse or campus
+2. Create a floor plan layout feature to map out the location of the audit
+    - This could be a useful feature when performing to show exact location of the audit
+    - Shows AP overlay locations on the floor plan
+    - Shows AP signal strength on the floor plan
