@@ -1,7 +1,7 @@
 # WiFi Security Audit Report
 
 # Report Template - WiFiSecAudit
-# Copyright (C) 2025 Islc12
+# Copyright (C) 2025 Richard Smith (Islc12)
 # 
 # This file is part of WiFiSecAudit.
 # 

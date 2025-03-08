@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # WiFiSecAudit - deauth.py
-# Copyright (C) 2025 Islc12
+# Copyright (C) 2025 Richard Smith (Islc12)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # WiFiSecAudit - config.sh
-# Copyright (C) 2025 Islc12
+# Copyright (C) 2025 Richard Smith (Islc12)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,8 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-chmod u+x main.py
-chmod u+x monitor.py
+chmod u+x ./main.py
 # reserved for future use
 # reserved for future use
 # reserved for future use
