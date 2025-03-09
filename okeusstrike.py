@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# WiFiSecAudit - deauth.py
+# WiFiSecAudit - okeusstrike
 # Copyright (C) 2025 Richard Smith (Islc12)
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,9 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-from scapy.all import *
+import socket
+import argparse
 
 # deauth function
 def deauth():
     # initialize a deauth attack
-    pass
+    socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
