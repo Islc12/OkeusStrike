@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
-# WiFiSecAudit - config.sh
+# WiFiSecAudit - deauth.py
 # Copyright (C) 2025 Richard Smith (Islc12)
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,8 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-chmod u+x ./main.py
-# reserved for future use
-# reserved for future use
-# reserved for future use
-rm -- "$0"
+from scapy.all import *
+
+# deauth function
+def deauth():
+    # initialize a deauth attack
+    pass
