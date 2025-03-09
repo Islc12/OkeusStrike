@@ -1,6 +1,12 @@
 # OkeusStrike - WiFi Deauthentication Attack Tool
 
+#### Author: Rich Smith (Islc12)
 
+#### Written: February 2025
+
+#### Contact: richrsmith@proton.me
+
+-------------------------------------------------------------------------------------------------------------------------------------------
 
 ## Disclaimer
 
@@ -10,16 +16,11 @@ activities conducted using this script. The use of this script for any illegal o
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 
-#### Author: Rich Smith (Islc12)
+## About
 
-#### Written: Feburary 2025
-
-#### Contact: richrsmith@proton.me
-
--------------------------------------------------------------------------------------------------------------------------------------------
-
-## License
-This project is licensed under the **GNU General Public License v3.0** - see the [LICENSE](LICENSE) file for details.
+This tool is designed to help with penetration testing, ethical hacking, and network security assessments. It is currently in development
+and is not yet ready for production use. However, despite being still in development, I have made it publicly available so that others can
+see the progress and provide feedback.
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -29,30 +30,23 @@ reserved for later use
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 
-## Installation and setup instructions:
-
-reserved for later use
-
-## Running the script:
+## Usage Instructions:
 
 reserved for later use
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 
-## About
-
-This tool is designed to help with penetration testing, ethical hacking, and network security assessments. It is currently in development
-and is not yet ready for production use. However, despite being still in development, I have made it publicly available so that others can
-see the progress and provide feedback.
-
-------------------------------------------------------------------------------------------------------------------------------------------
-
 ## History
 
 Okeus was a god of the Powhatan tribe located in Central/Eastern Virginia, USA. He's associated as the God of war and often considered
-vengeful or wrathful. Mistakenly considered the devil by early Europeaon colonists as well as missionaries who had misinterpreted the
+vengeful or wrathful. Mistakenly considered the devil by early European colonists as well as missionaries who had misinterpreted the
 Powhatan Okeus was actually likely to be the most important God in their pantheon. Okeus was also believed to be able to bring misfortunes
 such as illness, crop failure, and other disasters to the Powhatan if not gratified. Due to this belief, Okeus was often worshiped
-extensively by the Powhatan and their spiritual leaders attmpted to commune with Okeaus to bring good fortune.
+extensively by the Powhatan and their spiritual leaders attempted to commune with Okeaus to bring good fortune.
 
-Referance Link: [Okeus History](https://en.wikipedia.org/wiki/Okeus)
+Reference Link: [Okeus History](https://en.wikipedia.org/wiki/Okeus)
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+## License
+This project is licensed under the **GNU General Public License v3.0** - see the [LICENSE](LICENSE) file for details.
