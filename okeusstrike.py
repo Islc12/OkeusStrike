@@ -22,4 +22,4 @@ import argparse
 # deauth function
 def deauth():
     # initialize a deauth attack
-    socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
+    pass
