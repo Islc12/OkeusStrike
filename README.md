@@ -44,3 +44,15 @@ reserved for later use
 This tool is designed to help with penetration testing, ethical hacking, and network security assessments. It is currently in development
 and is not yet ready for production use. However, despite being still in development, I have made it publicly available so that others can
 see the progress and provide feedback.
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
+## History
+
+Okeus was a god of the Powhatan tribe located in Central/Eastern Virginia, USA. He's associated as the God of war and often considered
+vengeful or wrathful. Mistakenly considered the devil by early Europeaon colonists as well as missionaries who had misinterpreted the
+Powhatan Okeus was actually likely to be the most important God in their pantheon. Okeus was also believed to be able to bring misfortunes
+such as illness, crop failure, and other disasters to the Powhatan if not gratified. Due to this belief, Okeus was often worshiped
+extensively by the Powhatan and their spiritual leaders attmpted to commune with Okeaus to bring good fortune.
+
+Referance Link: [Okeus History](https://en.wikipedia.org/wiki/Okeus)
