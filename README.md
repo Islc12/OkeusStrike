@@ -39,10 +39,9 @@ reserved for later use
 ## History
 
 Okeus was a god of the Powhatan tribe located in Central/Eastern Virginia, USA. He's associated as the God of war and often considered
-vengeful or wrathful. Mistakenly considered the devil by early European colonists as well as missionaries who had misinterpreted the
-Powhatan Okeus was actually likely to be the most important God in their pantheon. Okeus was also believed to be able to bring misfortunes
-such as illness, crop failure, and other disasters to the Powhatan if not gratified. Due to this belief, Okeus was often worshiped
-extensively by the Powhatan and their spiritual leaders attempted to commune with Okeaus to bring good fortune.
+vengeful or wrathful. Mistakenly considered the devil by early European colonists as well as missionaries, Okeus was likely to be the most
+important God in the Powhatan pantheon. He was often worshiped by the Powhatan as they believed that he would bring good fortunes during
+times of illness, crop failures, and other disasters.
 
 Reference Link: [Okeus History](https://en.wikipedia.org/wiki/Okeus)
 
