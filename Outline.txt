@@ -1,0 +1,88 @@
+Rough outline for okeusstrike - a deauthentication tool written in python
+
+
+- enable monitor mode
+    - import OS
+    - ip link set <interface> down
+    - iwconfig <interface> mode monitor
+    - ip link set <interface> up
+    - add checks prior to start to ensure root privleges
+- be able to scan for beacon frames to ID target networks
+    - monitor mode already intercepts frames, we just need to capture them with sockets
+- be able to intercept data frames to ID potential target clients
+    - monitor mode already intercepts frames, we just need to capture with them with sockets
+    - read and log frames with pyshark
+- associate mac address with target networks
+    - select target network from a list of SSIDs
+    - capture channel of target network
+- associate mac address with target client
+    - start passive scan of target network
+        - need BSSID and channel of target network
+    - monitor probe responses to identify target clients
+    - monitor for probe requests for logging purposes
+- build 802.11 frames
+    - Frame control field
+        - management frame
+            - 0x0C - deauthentication frame
+            - 0x08 - beacon frame
+            - 0x0A - disassociation frame
+            - 0x0B - authentication frame
+            - 0x04 - probe request frame
+            - 0x05 - probe response frame
+            - 0x00 - Association Request
+            - 0x01 - Association Response
+            - 0x02 - Reassociation Request
+            - 0x03 - Reassociation Response
+            - 0x0D - Action frame
+        - Control frame
+            - Block Ack request - 0x18
+            - Block Ack response - 0x19
+            - POS-poll - 0x1A
+            - RTS - 0x1B
+            - CTS - 0x1C
+            - ACK - 0x1D
+            - CF-End - 0x1E
+            - CF-End+CF-ACK - 0x1F
+        - Data frame
+            - Data - 0x20
+            - Data+CF-Ack - 0x21
+            - Data+CF-Poll - 0x22
+            - Data+CF-Poll+CF-Ack - 0x23
+            - CF-ack - 0x25
+            - CF-poll - 0x26
+            - CF-poll+CF-ack - 0x27
+            - QoS data - 0x28
+            - QoS data+CF-Ack - 0x29
+            - QoS data+CF-Poll - 0x2A
+            - QoS data+CF-Poll+CF-Ack - 0x2B
+            - QoS CF-Poll (no data) - 0x2E
+            - QoS CF-ack (no data) - 0x2F
+    - Duration
+        - Measured in microseconds across a 16 bit field
+    - Destination address
+    - Source address
+    - BSSID - MAC spoofing
+        - lets look into macchanger a linux native tool for mac spoofing
+        - build on with the OS library - maybe subprocess depending on complexity and standard output return
+    - 4th address - used for AP hopping
+        - we'll build this feature in later, tester will need knowledge of the target network layout
+    - Sequence control field
+    - Frame body
+        - reason codes
+            - Code 1: Unspecified reason. - 00 01
+            - Code 2: Previous authentication is no longer valid. - 00 02
+            - Code 3: Station has left the Basic Service Set (BSS) or Extended Service Set (ESS). - 00 03
+            - Code 4: Inactivity timer expired. - 00 04
+            - Code 5: Disassociated due to insufficient resources at the AP. - 00 05
+            - Code 6: Class 2 frame received from a nonauthenticated station. - 00 06
+            - Code 7: Class 3 frame received from a nonassociated station. - 00 07
+            - Code 8: Station has left the BSS or ESS (disassociation). - 00 08
+            - Code 9: Station is attempted to authenticate with an AP that doesn't support the authentication protocol. - 00 09
+            - Code 10: Specified timeout - 00 0A
+            - Code 11: Group Key Update Timeout - 00 0B
+            - Code 12: Unspecified reason (disassociation). - 00 0C
+            - Code 13: Invalid information - 00 0D
+            - Code 14: Incompatible parameters - 00 0E
+    - Frame check Sequence
+
+

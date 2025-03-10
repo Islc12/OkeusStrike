@@ -16,10 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-import socket
-import argparse
-
-# deauth function
-def deauth():
-    # initialize a deauth attack
-    pass
+import socket # low level networking
+import argparse # argument parsing
+import os # interact with underlying OS
+from datetime import datetime # apply for file naming
+import subprocess # possibly use to run native linux commands
+import time # use for time based attack types
+import glob # use for file navigation of captured files
+import csv # reading/writing csv log files
+import logging # build log files
+import pyshark # packet capture system
