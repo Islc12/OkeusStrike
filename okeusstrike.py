@@ -17,6 +17,7 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import socket  # Low-level networking with raw sockets
+import arguments  # Parsing command-line arguments from arguments.py
 import os  # Interact with the underlying OS
 import time  # Time-based attack types (delays, duration, etc.)
 import glob  # File navigation for captured files
