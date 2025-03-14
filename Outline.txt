@@ -1,5 +1,7 @@
-Rough outline for okeusstrike - a deauthentication tool written in python
+Rough outline for okeusstrike - a deauthentication attack tool written in python
 
+- check for root privleges
+    - almost every aspect of this will will require root privleges, so we'll need to check for this immediately 
 
 - enable monitor mode
     - import OS
@@ -7,82 +9,304 @@ Rough outline for okeusstrike - a deauthentication tool written in python
     - iwconfig <interface> mode monitor
     - ip link set <interface> up
     - add checks prior to start to ensure root privleges
+        ALTERNATIVE: use pyroute2
+    - pyroute2 - used for altering wifi network adapter settings at the OS level
+            https://pypi.org/project/pyroute2/
+
 - be able to scan for beacon frames to ID target networks
     - monitor mode already intercepts frames, we just need to capture them with sockets
+
 - be able to intercept data frames to ID potential target clients
     - monitor mode already intercepts frames, we just need to capture with them with sockets
     - read and log frames with pyshark
+
 - associate mac address with target networks
     - select target network from a list of SSIDs
     - capture channel of target network
+
 - associate mac address with target client
     - start passive scan of target network
         - need BSSID and channel of target network
     - monitor probe responses to identify target clients
     - monitor for probe requests for logging purposes
+
+- targetting
+    - single target
+        - frame count
+        - time interval between frames
+        - frame segmentation
+    - broadcast attack
+        - target low power clients
+        - duplicate frame filtering
+    - multile targets (not broadcast attack)
+        - target prioritization
+            - low power clients
+            - clients with high traffic
+            - clients with high packet loss
+            - frame segmentation to avoid detection
+    - deauth frame flooding
+    - time delay between frames
+    - randomization of sequence numbers
+    - randomization of MAC addresses
+
+- build the socket
+    - AF_PACKET - linux native
+    - SOCK_RAW - raw socket - this will require root privleges
+    - htons()
+        - Wireless Frames 
+            - 0x0003 - 802.11
+        - IEEE 802.1 protocols - This will likely be used later on in the build, for right now it provides features outside the scope of this project
+            - 0x88E - 802.1X - wireless authentication - possible incorporation for authentication bypass attacks
+            - 0x8100 - 802.1Q - wifi bridges - maybe for advanced scripting
+        - Ethernet Frames - aside from LLDP we probably won't use, but saving the research for future reference
+            - 0x88CC - LLDP - map network topology - maybe for advanced scripting
+            - 0x0800 - IPV4 *won't use for this - saving for future reference*
+            - 0x0806 - ARP *won't use for this - saving for future reference*
+            - 0x86DD - IPV6 *won't use for this - saving for future reference*
+
 - build 802.11 frames
-    - Frame control field
-        - management frame
-            - 0x0C - deauthentication frame
-            - 0x08 - beacon frame
-            - 0x0A - disassociation frame
-            - 0x0B - authentication frame
-            - 0x04 - probe request frame
-            - 0x05 - probe response frame
-            - 0x00 - Association Request
-            - 0x01 - Association Response
-            - 0x02 - Reassociation Request
-            - 0x03 - Reassociation Response
-            - 0x0D - Action frame
-        - Control frame
-            - Block Ack request - 0x18
-            - Block Ack response - 0x19
-            - POS-poll - 0x1A
-            - RTS - 0x1B
-            - CTS - 0x1C
-            - ACK - 0x1D
-            - CF-End - 0x1E
-            - CF-End+CF-ACK - 0x1F
-        - Data frame
-            - Data - 0x20
-            - Data+CF-Ack - 0x21
-            - Data+CF-Poll - 0x22
-            - Data+CF-Poll+CF-Ack - 0x23
-            - CF-ack - 0x25
-            - CF-poll - 0x26
-            - CF-poll+CF-ack - 0x27
-            - QoS data - 0x28
-            - QoS data+CF-Ack - 0x29
-            - QoS data+CF-Poll - 0x2A
-            - QoS data+CF-Poll+CF-Ack - 0x2B
-            - QoS CF-Poll (no data) - 0x2E
-            - QoS CF-ack (no data) - 0x2F
-    - Duration
-        - Measured in microseconds across a 16 bit field
-    - Destination address
-    - Source address
-    - BSSID - MAC spoofing
-        - lets look into macchanger a linux native tool for mac spoofing
-        - build on with the OS library - maybe subprocess depending on complexity and standard output return
-    - 4th address - used for AP hopping
-        - we'll build this feature in later, tester will need knowledge of the target network layout
-    - Sequence control field
-    - Frame body
+    - Header
+        - Frame control field (2 bytes - 1 byte for manangement/data/control, 1 byte handles fragmentation and other)
+            - management frame
+                - \x0C\x00 - deauthentication frame
+                - \x08\x00 - beacon frame - used for network and client discovery
+                - \x0A\x00 - disassociation frame
+                - \x0B\x00 - authentication frame
+                - \x04\x00 - probe request frame - used for client discovery
+                - \x05\x00 - probe response frame - used for client discovery
+                - \x00\x00 - Association Request
+                - \x01\x00 - Association Response
+                - \x02\x00 - Reassociation Request
+                - \x03\x00 - Reassociation Response
+                - \x0D\x00 - Action frame
+            - Control frame - not particularly useful for this project - but we'll see if they come to use
+                - Block Ack request - \x18\x00
+                - Block Ack response - \x19\x00
+                - POS-poll - \x1A\x00
+                - RTS - \x1B\x00
+                - CTS - \x1C\x00
+                - ACK - \x1D\x00
+                - CF-End - \x1E\x00
+                - CF-End+CF-ACK - \x1F\x00
+            - Data frame - extremely useful for client discovery, we'll have to set something up to check for this - memory management may be an issue
+                -Standard Data - \x20\x00 - Normal data transmission
+                -Data + CF-Ack - \x21\x00 - Data with Acknowledgment (CF-Ack)
+                -Data + CF-Poll - \x22\x00 - Data with CF-Poll (PCF mode)
+                -Data + CF-Ack + CF-Poll - \x23\x00 - Data with both CF-Ack and CF-Poll
+                -Null Data - \x24\x00 - Frame without actual data, used in power-saving mode
+                -CF-Ack (No Data) - \x25\x00 - Acknowledgment frame (no data) in CF mode
+                -CF-Poll (No Data) - \x26\x00 - Poll frame (no data) in CF mode
+                -CF-Ack + CF-Poll (No Data) - \x27\x00 - CF-Ack and CF-Poll combined (no data)
+                -QoS Data - \x28\x00 - Data transmission in QoS-enabled networks
+                -QoS Data + CF-Ack	- \x29\x00 - QoS Data with CF-Ack
+                -QoS Data + CF-Poll	- \x2A\x00 - QoS Data with CF-Poll
+                -QoS Data + CF-Ack + CF-Poll - \x2B\x00 - QoS Data with both CF-Ack and CF-Poll
+                -QoS Null Data	- \x2C\x00 - Null Data frame in QoS mode (for power-saving clients)
+                -QoS CF-Ack (No Data) - \x2D\x00 - QoS Acknowledgment frame without data
+                -QoS CF-Poll (No Data) - \x2E\x00 - QoS Poll frame without data
+                -QoS CF-Ack + CF-Poll (No Data) - \x2F\x00 - Combination of QoS CF-Ack and CF-Poll (No Data)
+            2nd byte - \x00 - normal management frame, no bits active 
+                - To DS - frame is going to the AP - \x01
+                - From DS - frame is coming from the AP - \x02
+                - more fragments - frame is a fragment of a larger frame - \x04
+                - retry - frame is a retransmission - \x08
+                - Power management - not used for deauth, this is for client power saving mode activation - \x10
+                - more data - frame has more data to send (not used for deauthentication - this has to do with power saving mode) - \x20
+                - protected frame - frame is encrypted or unencrypted - \x40
+                - sequence order - strict ordering of frame sequence - \x80
+        - Duration
+            - Measured in microseconds across a 16 bit field - \x0000 - \xFFFF - ignored for deauthentication frames
+        - Destination address
+            - remember to use \x notation
+        - Source address
+            - remember to use \x notation
+        - BSSID - MAC spoofing
+            - remember to use \x notation
+            - lets look into macchanger a linux native tool for mac spoofing
+            - build on with the OS library - maybe subprocess depending on complexity and standard output return
+        - 4th address - used for AP hopping
+            - we'll build this feature in later, tester will need knowledge of the target network layout - not used for deauthentication
+        - Sequence control field
+            - 16 bit field - \x0000 - \xFFFF
+            - first 12 bits are for the sequence number
+            - last 4 bits are for the fragment number
+            - we can build randomized sequence numbers for avoiding deauthentication
+            - potentially bypass duplicate frame filtering
+            - we can create fragmented attack payloads - not extrememly useful since deauth frames are small, but could potentially have use for
+                doing a massive broadcast attack to get past security measures
+    - Body - only reason codes used for deauthentication
         - reason codes
-            - Code 1: Unspecified reason. - 00 01
-            - Code 2: Previous authentication is no longer valid. - 00 02
-            - Code 3: Station has left the Basic Service Set (BSS) or Extended Service Set (ESS). - 00 03
-            - Code 4: Inactivity timer expired. - 00 04
-            - Code 5: Disassociated due to insufficient resources at the AP. - 00 05
-            - Code 6: Class 2 frame received from a nonauthenticated station. - 00 06
-            - Code 7: Class 3 frame received from a nonassociated station. - 00 07
-            - Code 8: Station has left the BSS or ESS (disassociation). - 00 08
-            - Code 9: Station is attempted to authenticate with an AP that doesn't support the authentication protocol. - 00 09
-            - Code 10: Specified timeout - 00 0A
-            - Code 11: Group Key Update Timeout - 00 0B
-            - Code 12: Unspecified reason (disassociation). - 00 0C
-            - Code 13: Invalid information - 00 0D
-            - Code 14: Incompatible parameters - 00 0E
-    - Frame check Sequence
+            - Code 1: Unspecified reason. - \x00\x01
+            - Code 2: Previous authentication is no longer valid. - \x00\x02
+            - Code 3: Station has left the Basic Service Set (BSS) or Extended Service Set (ESS). - \x00\x03
+            - Code 4: Inactivity timer expired. - \x00\x04
+            - Code 5: Disassociated due to insufficient resources at the AP. - \x00\x05
+            - Code 6: Class 2 frame received from a nonauthenticated station. - \x00\x06
+            - Code 7: Class 3 frame received from a nonassociated station. - \x00\x07
+            - Code 8: Station has left the BSS or ESS (disassociation). - \x00\x08
+            - Code 9: Station is attempted to authenticate with an AP that doesn't support the authentication protocol. - \x00\x09
+            - Code 10: Specified timeout - \x00\x0A
+            - Code 11: Group Key Update Timeout - \x00\x0B
+            - Code 12: Unspecified reason (disassociation). - \x00\x0C
+            - Code 13: Invalid information - \x00\x0D
+            - Code 14: Incompatible parameters - \x00\x0E
+    - Trailer
+        - Frame check Sequence - unnecessary for deauthentication frames and network identification - hardware will handle this
+            - potentially useful for client discovery
+                - capture probe requests and responses
+                - capture data frames to see which MAC address are active
+                - sniff association requests 
+            - use pyshark to check this so we can ID weak clients for targeting
+
+- arguements - options bound to change, this just gives a starting point
+    - -h, --help 
+    - -v, --verbose (show output to screen) 
+    - -w, --write <USER_INPUT_FILE_NAME_YYYYmmdd_HHMM> (creates 2 log files, 1 csv and 1 pcap, also all files are appended with -01, -02, etc) 
+    - --pcap <USER_INPUT_FILE_NAME_YYYYmmdd_HHMM> (only write pcap file, same format as --write) 
+    - --csv <USER_INPUT_FILE_NAME_YYYYmmdd_HHMM> (only write csv file, same format as --write) 
+    - --monitor <INTERFACE> (enable/disable monitor mode) 
+    - -m, --multiple <TARGET, TARGET, TARGET> (multiple targets csv file input) 
+    - -b, --broadcast (broadcast attack) (FF:FF:FF:FF:FF:FF) 
+    - --time <TIME_IN_MS> (time delay between frames in milliseconds) 
+    - --random-interval (randomize time delay between frames)
+    - --fragment-random (for fragmenting deauth frames for potential bypassing IDS/IPS, fragmentation size automatically chosen at random)
+    - --fragment-size <SIZE> (user input of fragment size in bytes) 
+    - --flood <TIME> (deauth frame flooding, TIME in seconds) **cannot be used with --count**
+    - --count <NUMBER> (number of frames to send) **cannot be used with --flood**
+    - -t, --target <MAC> or <MAC, MAC, MAC> (target MAC address either one Mac address or a comma separated list of MAC addresses) 
+    - -s, --source <MAC> (source MAC address) 
+    - -n, --network <BSSID> (BSSID) 
+    - -d, --discover (if no BSSID is given scan for networks, else scan for clients) 
+    - --mac <NEW_MAC> (MAC Spoofing, user enters new mac address afer) 
+    - -i, --interface <INTERFACE_ID> (network interface device, eg. wlan0) 
+    - --list-interfaces (list available network interfaces) 
+    - -c, --channel <CHANNEL_NUMBER> (channel number) 
+    - --power <LEVEL> (transmit power level in dBm)
+    - --reason-code <REASON_CODE> (reason code for deauthentication frame, default is reason code: 3) 
+    - --duration <DURATION_IN_MS> (duration of deauth frame in milliseconds, default is 0) 
+    - --randomize-duration (randomize duration of deauthentication frame)
+    - --sequence <SEQUENCE_NUMBER> (sequence number for deauthentication frame, default is none) 
+    - --randomize-sequence (randomize sequence number for deauthentication frame)
 
 
+- Extra to check into for 802.11w attacks -- we'll get to this later on
+    - Beacon flood attack 
+    - channel switch attack
+    - RTS (request to send) flood attack
+    - CTS (clear to send) flood attack
+    - RTS/CTS flood attack
+
+- functions
+    - list available wireless network interfaces - listinterface()
+    - start/stop monitor mode - monitor()
+        - if status = managed then start monitor mode
+        - if status = monitor then stop monitor mode
+    - network discovery, if BSSID is given, scan for clients - discovery()
+        - if bbsidinput() is true then scan for clients
+            - channelinput() is optional if user wants to do channel hopping
+        - else scan general beacon scan
+
+    - user input for channel number - channelinput()
+
+    - convert mac address to hex - machex()
+        - replace ":" with "\x"
+    - user input for target client MAC address - target(machex)
+    - user input for source MAC address - source(machex)
+    - user input for BSSID - bssid(machex)
+
+    - multiple target innput from file - multipleinput()
+        - with open(file, "r") as f:
+    - broadcast attack - broadcastattack()
+        - broadcast = "\xFF\xFF\xFF\xFF\xFF\xFF"
+
+    - write files for output - createfiles()
+        - file = {userinput}_YYmmdd_HHMM-##
+        - return file
+    - create csv file for output - createcsv(file)
+        - file = creatfiles()
+        - csvfile = file + ".csv"
+    - create pcap file for output - createpcap(file)
+        - file = creatfiles()
+        - pcapfile = file + ".pcap"
+
+    - time delay between frames in milliseconds - timedelay()
+
+    - user input a number of frames to send - userframes()
+    
+    - deauth frame flooding - deauthflood()
+    
+    - randomize time delay between frames - randomtimedelay()
+
+    - randomize duration of deauth frame - randomduration()
+    - user input for duration of deauth frame in milliseconds - durationinput()
+
+    - mac spoofing - macspoof(machex)
+
+    - user input for transmit power level in dBm - powerinput()
+
+    - user input for reason code - reasoncodeinput()
+       - if no input specified then default is reason code: \x00\x03
+
+    ** FRAGMENTATION AND SEQUENCE FUNCTIONS MUST BE USED TOGETHER **
+            * DEFAULT IS NO FRAGMENTATION AND NO SEQUENCE *
+            use bitwise OR to combine sequence and fragmentation functions
+    - user input fragmentation size - userfragment()
+        - must be 4 bit integer < 15
+        - userfragment = int(input())
+        - return userfragment
+    - random fragmentation size for packets - randomfragment()
+        - min 0, max 15
+        - randomfragment = random.randint(0, 15)
+        - return randomfragment
+    - user input for sequence number for deauth frame - sequenceinput()
+        - must be a 12 bit integer less than 4095
+        - sequencenumber = int(input())
+        - return sequencenumber
+    - randomize sequence number for deauth frame - randomsequence() 
+        - min 0, max 4095
+        - randomsequence = random.randint(0, 4095)
+        - return randomsequence
+    - combine  sequence and fragmentation functions - sequencefragment(userfragment, randomfragment, sequencenumber, randomsequence)
+        - if **whatever function** is None then skip that function input
+        - elif **whatever function** is not None then assign to either sequence or fragmentation variable
+        - sequencebyte = sequence | fragmentation
+        - return sequencebyte
+
+    - arguemnts()
+        def arguments():
+            global args  # Declare args as a global variable
+            okeus_parse = argparse.ArgumentParser(description="OkeusStrike: Advanced Deauth Attack Tool")
+            okeus_parse.add_argument("--monitor", dest="monitor_mode", help="Enable/disable monitor mode")
+            args = okeus_parse.parse_args()  # Store in global args
+
+        def monitor():
+            if args.monitor_mode == "enable":
+            print("Monitor mode enabled")
+            elif args.monitor_mode == "disable":
+            print("Monitor mode disabled")
+
+        if __name__ == '__main__':
+            arguments()  # Parse args once
+            monitor()  # No need to pass args
+
+    - main()
+        if args.monitor_mode:
+            monitor()
+        if args.taget:
+            target()
+            
+        if args.fragmentation and args.sequence:
+            userfragmentation()
+            sequenceinput()
+
+- File Organization -
+    - okeusstrike.py (main()) - 1
+    - arguments.py (holds arguments()) - 1
+    - interface.py (handles listinterface(), monitor(), and discovery()) - 3
+    - framecontrol.py (handles userfragment(), sequenceinput(), randomfragment(), randomsequence(), sequencefragment()) - 5
+    - powerchan.py (handles channelinput() and powerinput()) - 2
+    - timer.py (handles time delay(), userframes(), randomtimedelay(), randomduration(), and durationinput()) - 5
+    - mac.py (handles machex(), target(), source(), bssid(), and macspoof()) - 5
+    - output.py (handles createfiles(), createcsv(), and createpcap()) - 3
+    - massatk.py (handles deauthflood(), broadcast()) -2 
+    - input.py (handles multipleinput(), reasoncodeinput()) - 2

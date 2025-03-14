@@ -16,13 +16,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-import socket # low level networking
-import argparse # argument parsing
-import os # interact with underlying OS
-from datetime import datetime # apply for file naming
-import subprocess # possibly use to run native linux commands
-import time # use for time based attack types
-import glob # use for file navigation of captured files
-import csv # reading/writing csv log files
-import logging # build log files
-import pyshark # packet capture system
+import socket  # Low-level networking with raw sockets
+import os  # Interact with the underlying OS
+import time  # Time-based attack types (delays, duration, etc.)
+import glob  # File navigation for captured files
+import csv  # Reading/writing CSV log files
+import pyshark  # Packet capture system
+import struct  # Unpacking binary data (e.g., network headers)
+import binascii  # Convert between binary and ASCII representations
+import fcntl  # Low-level network interface control (e.g., setting flags)
+import select  # Non-blocking I/O and socket timeout handling
+import errno  # Handling OS-level network errors
+import sys  # System-specific functionality (e.g., exiting on errors)
+import itertools  # Iterating over values (useful for fragmentation/sequencing)
+import random  # Randomization (delays, MAC spoofing, sequence numbers)
+from datetime import datetime  # File naming based on timestamps
+import threading # multithreading for file writing while capturing/attacking
