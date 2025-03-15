@@ -1,3 +1,9 @@
+import socket
+import struct
+import fcntl
+import binascii
+import random
+
 def userfragment():
     pass
 

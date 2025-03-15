@@ -1,3 +1,6 @@
+import socket
+import time
+
 def deauthflood():
     pass
 

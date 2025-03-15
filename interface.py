@@ -1,3 +1,10 @@
+import socket
+import struct
+import fcntl
+import binascii
+import os
+import sys
+
 def listinterface():
     pass
 

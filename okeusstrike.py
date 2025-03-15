@@ -33,3 +33,7 @@ import itertools  # Iterating over values (useful for fragmentation/sequencing)
 import random  # Randomization (delays, MAC spoofing, sequence numbers)
 from datetime import datetime  # File naming based on timestamps
 import threading # multithreading for file writing while capturing/attacking
+
+if os.geteuid() != 0:
+    print("ATTENTION: Script requires root privlages, please run as root")
+    exit(1) 

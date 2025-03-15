@@ -305,7 +305,7 @@ Rough outline for okeusstrike - a deauthentication attack tool written in python
     - interface.py (handles listinterface(), monitor(), and discovery()) - 3
     - framecontrol.py (handles userfragment(), sequenceinput(), randomfragment(), randomsequence(), sequencefragment()) - 5
     - powerchan.py (handles channelinput() and powerinput()) - 2
-    - timer.py (handles time delay(), userframes(), randomtimedelay(), randomduration(), and durationinput()) - 5
+    - timer.py (handles timedelay(), userframes(), randomtimedelay(), randomduration(), and durationinput()) - 5
     - mac.py (handles machex(), target(), source(), bssid(), and macspoof()) - 5
     - output.py (handles createfiles(), createcsv(), and createpcap()) - 3
     - massatk.py (handles deauthflood(), broadcast()) -2 
