@@ -23,14 +23,11 @@ def arguments():
 
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output")
 
-    parser.add_argument("-w", "--write", type=str, metavar="<USER_INPUT>_YYmmdd_HHMM", dest="writefile", help="Write data to a file")
-    parser.add_argument("--pcap", dest="pcapfile", metavar="<USER_INPUT>_YYmmdd_HHMM.pcap", type=str, help="Capture packets to a PCAP file")
-    parser.add_argument("--csv", dest="csvfile", metavar="<USER_INPUT>_YYmmdd_HHMM.csv", type=str, help="Write data to a CSV file")
+    parser.add_argument("-w", "--write", type=str, metavar="<USER_INPUT>_YYmmdd_HHMMSS.pcap", dest="writefile", help="Write capture data to pcap file")
 
-    parser.add_argument("--monitor", dest="monitor", action="store_true", help="Enable/disable monitor mode")
-    parser.add_argument("-i", "--interface", dest="interface", metavar="<INTERFACE>", type=str, help="Network interface to use")
-    parser.add_argument("--list-interfaces", dest="list_interfaces", action="store_true", help="List available network interfaces")
-    parser.add_argument("-d", "--discover", dest="discover", action="store_true", help="Discover available networks")
+    parser.add_argument("-i", "--interface", dest="netinterface", required=True, metavar="<INTERFACE>", type=str, help="Network interface to use")
+ 
+    parser.add_argument("-d", "--discover", dest="discover_networks", action="store_true", help="Discover available networks")
     parser.add_argument("--client-discovery", dest="client_discover", metavar="<Network_BSSID>", type=str, help="Scan for clients on Network BSSID")    
     parser.add_argument("-c", "--channel", dest="channel", metavar="<CHANNEL_NUMBER>", type=int, help="Channel to use")
     parser.add_argument("--power", dest="power", metavar="<POWER_LEVEL>", type=int, help="Set the transmit power in dBm")
@@ -51,7 +48,7 @@ def arguments():
     parser.add_argument("--sequence", dest="sequence", type=int, metavar="<SEQUENCE_NUMBER>", default=None, help="Sequence number for deauthentication frame, default is None")
     parser.add_argument("--randomize-sequence", dest="randomize_sequence", action="store_true", help="Randomize the sequence number")    
 
-    parser.add_argument("--mac", dest="mac", type=str, metavar="<MAC>", help="MAC address spoofing, user enters new mac address")
+    parser.add_argument("--spoof", dest="spoof", type=str, metavar="<MAC>", help="MAC address spoofing, user enters new mac address")
 
     parser.add_argument("--reason-code", choices=[1,15], metavar="<REASON_CODE>", default=3, dest="reason_code", type=int, help="Reason code for deauthentication")
 
