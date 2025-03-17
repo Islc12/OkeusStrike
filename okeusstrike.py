@@ -18,12 +18,17 @@
 
 # not all these imports are used in the final code, they are here until I determine exactly which file they will be used in
 import socket  # Low-level networking with raw sockets
-import arguments  # Parsing command-line arguments from arguments.py
+import okeusarguments # Parsing command-line arguments from arguments.py
+import discover # Network discovery functions from discovery.py
+import convert # MAC address conversion from convert.py
+import powerchan # Power level adjustment from powerchange.py
+import output # File output functions from output.py
+import mac # Handles target, source and bssid flags
+import input
+
 import os  # Interact with the underlying OS
 import time  # Time-based attack types (delays, duration, etc.)
 import glob  # File navigation for captured files
-import csv  # Reading/writing CSV log files
-import pyshark  # Packet capture system
 import struct  # Unpacking binary data (e.g., network headers)
 import binascii  # Convert between binary and ASCII representations
 import fcntl  # Low-level network interface control (e.g., setting flags)
@@ -31,10 +36,7 @@ import select  # Non-blocking I/O and socket timeout handling
 import errno  # Handling OS-level network errors
 import sys  # System-specific functionality (e.g., exiting on errors)
 import itertools  # Iterating over values (useful for fragmentation/sequencing)
-import random  # Randomization (delays, MAC spoofing, sequence numbers)
-from datetime import datetime  # File naming based on timestamps
 import threading # multithreading for file writing while capturing/attacking
-
 
 # Check if the script is running with root privileges, exits if not
 if os.geteuid() != 0:
@@ -42,21 +44,21 @@ if os.geteuid() != 0:
     exit(1) 
 
 def main():
-    args = arguments.parse_arguments()
+    args = okeusarguments.parse_arguments()
     # Parse command-line arguments
-    write_file = args.writefile
-    interface = args.netinterface
-    discover = args.discover_networks
-    client_discovery = args.client_discover
-    net_channel = args.channel
-    power_level = args.power
-    target_macs = args.target
-    source_mac = args.ap_source
-    network_bssid = args.net_bssid
-    multiple = args.multiple_file
+    write_file = args.writefile # mapped
+    interface = args.netinterface # handled automatically
+    net_discovery = args.discover_networks # mapped
+    client_discovery = args.client_discover # mapped
+    net_channel = args.channel # mapped
+    power_level = args.power # mapped
+    target_macs = args.target # mapped
+    source_mac = args.ap_source # mapped
+    network_bssid = args.net_bssid # mapped
+    multiple = args.multiple_file # sort of mapped - still need to read the file, parse it into machex and then into target_macs
     broadcast_attack =  args.broadcast
     time_delay = args.time
-    rand_interaval = args.random_interval
+    rand_interval = args.random_interval
     frame_flood = args.flood
     num_frames = args.count
     rand_frag = args.random_fragment
@@ -69,38 +71,53 @@ def main():
     rand_dur = args.randomize_duration
 
     # Create a raw socket for capturing packets
-    socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
-    socket.bind((interface, 0))
+    #socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
+    #socket.bind((interface, 0))
 
     # handle all illogical arguments
-    if write_file and not (discover or client_discovery or target_macs):
-        exit(1)
-    if frame_flood and (num_frames or time_delay or rand_interval or dur_of_attack or rand_dur or discover or client_discovery):
-        exit(1)
-    if num_frames and client_discovery:
-        exit(1)
-    if time_delay and rand_interval:
-        exit(1)
-    if target_macs and (multiple or client_discovery):
-        exit(1)
-    if rand_frag and frag_size:
-        exit(1)
-    if sequence_number and rand_sequence:
-        exit(1)
-    if dur_of_attack and rand_dur:
-        exit(1)
-    if discover and (client_discovery or target_macs or num_frames):
-        exit(1)
+    #if write_file and not (net_discovery or client_discovery or target_macs):
+    #    exit(1)
+    #if frame_flood and (num_frames or time_delay or rand_interval or dur_of_attack or rand_dur or net_discovery or client_discovery):
+    #    exit(1)
+    #if num_frames and client_discovery:
+    #    exit(1)
+    #if time_delay and rand_interval:
+    #    exit(1)
+    #if target_macs and (multiple or client_discovery):
+    #    exit(1)
+    #if rand_frag and frag_size:
+    #    exit(1)
+    #if sequence_number and rand_sequence:
+    #    exit(1)
+    #if dur_of_attack and rand_dur:
+    #    exit(1)
+    #if net_discovery and (client_discovery or target_macs or num_frames):
+    #    exit(1)
     
     # start logic
-    if discover:
-        disc()
-        if write_file:
-            create_file()
+    if net_discovery:
+        discover.disc()
+    if write_file:
+        output.create_file(write_file)
     if client_discovery:
-        xmac = machex(client_discovery)
-        bssid(xmac)
-        if write_file:
-            create_file()
-        if net_channel:
-            channelinput(net_channel)
+        xmac = convert.machex(client_discovery)
+        discover.client_disc(xmac)
+    if net_channel:
+        powerchan.channelinput(net_channel)
+    if power_level:
+        powerchan.powerinput(power_level)
+    if target_macs:
+        xmac = convert.machex(target_macs)
+        mac.target(xmac)
+    if source_mac:
+        xmac = convert.machex(source_mac)
+        mac.source(xmac)
+    if network_bssid:
+        xmac = convert.machex(network_bssid)
+        mac.bssid(xmac)
+    if multiple:
+        # in development
+        input.multiple_input(multiple)
+
+if __name__ == "__main__":
+    main()

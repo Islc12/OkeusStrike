@@ -3,8 +3,9 @@ import struct
 import sys
 
 
-def channelinput():
-    pass
+def channelinput(channel):
+    print(channel)
 
-def powerinput():
-    pass
+
+def powerinput(power):
+    print(power)

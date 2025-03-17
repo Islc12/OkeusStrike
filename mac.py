@@ -3,14 +3,14 @@ import sys
 import struct
 import binascii
 
-def target():
-    pass
+def target(targmac):
+    print(targmac)
 
-def source():
-    pass
+def source(sourcemac):
+    print(sourcemac)
 
-def bssid():
-    pass
+def bssid(bssidmac):
+    print(bssidmac)
 
-def macspoof():
-    pass
+def macspoof(spoofmac):
+    print(spoofmac)

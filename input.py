@@ -7,8 +7,8 @@ import fcntl
 import binascii
 
 
-def multipleinput():
-    pass
+def multiple_input(files):
+    print(f"in development -  {files}")
 
-def reasoncodeinput():
+def reasoncode_input():
     pass
