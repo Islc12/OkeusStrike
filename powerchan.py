@@ -4,8 +4,8 @@ import sys
 
 
 def channelinput(channel):
-    print(channel)
+    print(f"channel({channel})")
 
 
 def powerinput(power):
-    print(power)
+    print(f"powerinput({power})")

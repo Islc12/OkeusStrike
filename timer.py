@@ -1,17 +1,17 @@
 import time
 import random
 
-def timedelay():
-    pass
+def time_delay(seconds):
+    print(f"time_delay({seconds})")
 
-def userframes():
-    pass
+def user_frames(count):
+    print(f"user_frames({count})")
 
-def randomtimedelay():
-    pass
+def randomtime_delay():
+    print("randomtime_delay()")
 
-def randomduration():
-    pass
+def random_duration():
+    print("random_duration()")
 
-def durationinput():
-    pass
+def duration_input(seconds):
+    print(f"duration_input({seconds})")

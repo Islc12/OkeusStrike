@@ -4,4 +4,4 @@ import glob
 from datetime import datetime
 
 def create_file(new_file):
-    print(new_file)
+    print(f"new_file() {new_file}")

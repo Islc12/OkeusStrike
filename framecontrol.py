@@ -4,17 +4,19 @@ import fcntl
 import binascii
 import random
 
-def userfragment():
-    pass
+def userfragment(frag):
+    print(f"userfragment({frag})")
 
-def sequenceinput():
-    pass
+def sequenceinput(sequencenumber):
+    print(f"sequenceinput({sequencenumber})")
 
 def randomfragment():
-    pass
+    print("randomfragment()")
 
 def randomsequence():
-    pass
+    print("randomsequence()")
 
 def sequencefragment():
+    # reserved for future use
     pass
+

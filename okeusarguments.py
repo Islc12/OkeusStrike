@@ -40,20 +40,20 @@ def parse_arguments():
 
     parser.add_argument("--time", dest="time", type=int, metavar="<TIME_IN_MS>", help="Time delay between frames in milliseconds")
     parser.add_argument("--random-interval", dest="random_interval", action="store_true", help="Randomize interval between frames")
-    parser.add_argument("--flood", dest="flood", type=int, default=5, metavar="<TIME_IN_SECONDS>", help="Flood attack with time duration in seconds, cannot be used with --count, default is a 5 second frame flood")
+    parser.add_argument("--flood", dest="flood", type=int, metavar="<TIME_IN_SECONDS>", help="Flood attack with time duration in seconds, cannot be used with --count, default is a 5 second frame flood")
     parser.add_argument("--count", dest="count", type=int, metavar="<INT>", help="Number of frames to send, cannot be used with --flood")
 
-    parser.add_argument("--fragment-random", dest="random_fragment", action="store_true", help="Randomize fragment size")
+    parser.add_argument("--random-fragment", dest="random_fragment", action="store_true", help="Randomize fragment size")
     parser.add_argument("--fragment-size", dest="fragment_size", metavar="<INT>", type=int, help="Fragment size")
     parser.add_argument("--sequence", dest="sequence", type=int, metavar="<SEQUENCE_NUMBER>", help="Sequence number for deauthentication frame, default is None")
-    parser.add_argument("--randomize-sequence", dest="randomize_sequence", action="store_true", help="Randomize the sequence number")    
+    parser.add_argument("--random-sequence", dest="randomize_sequence", action="store_true", help="Randomize the sequence number")    
 
     parser.add_argument("--spoof", dest="spoof", type=str, metavar="<MAC>", help="MAC address spoofing, user enters new mac address")
 
-    parser.add_argument("--reason-code", choices=[1,15], metavar="<REASON_CODE>", dest="reason_code", type=int, help="Reason code for deauthentication")
+    parser.add_argument("--reason-code", choices=range(1,15), metavar="<REASON_CODE>", dest="reason_code", type=int, help="Reason code for deauthentication")
 
     parser.add_argument("--duration", dest="duration", metavar="<TIME_IN_MS>", type=int, help="Duration of the attack in milliseconds")
-    parser.add_argument("--randomize-duration", dest="randomize_duration", action="store_true", help="Randomize the duration of the attack")
+    parser.add_argument("--random-duration", dest="randomize_duration", action="store_true", help="Randomize the duration of the attack")
 
     return parser.parse_args()
 

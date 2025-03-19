@@ -4,13 +4,13 @@ import struct
 import binascii
 
 def target(targmac):
-    print(targmac)
+    print(f"targmac() - {targmac}")
 
 def source(sourcemac):
-    print(sourcemac)
+    print(f"sourcemac({sourcemac})")
 
 def bssid(bssidmac):
-    print(bssidmac)
+    print(f"bssidmac({bssidmac})")
 
 def macspoof(spoofmac):
-    print(spoofmac)
+    print(f"macspoof({spoofmac})")

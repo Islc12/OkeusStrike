@@ -24,7 +24,10 @@ import convert # MAC address conversion from convert.py
 import powerchan # Power level adjustment from powerchange.py
 import output # File output functions from output.py
 import mac # Handles target, source and bssid flags
-import input
+import input # Handles file input and reason codes
+import massatk # Handles flooding and broadcast attacks
+import timer # Handles time-based attack types
+import framecontrol # Handles fragmentation and sequencing
 
 import os  # Interact with the underlying OS
 import time  # Time-based attack types (delays, duration, etc.)
@@ -56,43 +59,52 @@ def main():
     source_mac = args.ap_source # mapped
     network_bssid = args.net_bssid # mapped
     multiple = args.multiple_file # sort of mapped - still need to read the file, parse it into machex and then into target_macs
-    broadcast_attack =  args.broadcast
-    time_delay = args.time
-    rand_interval = args.random_interval
-    frame_flood = args.flood
-    num_frames = args.count
-    rand_frag = args.random_fragment
-    frag_size = args.fragment_size
-    sequence_number = args.sequence
-    rand_sequence = args.randomize_sequence
-    mac_spoof = args.spoof
-    reason = args.reason_code
-    dur_of_attack = args.duration
-    rand_dur = args.randomize_duration
+    broadcast_attack =  args.broadcast # mapped
+    timedelay = args.time # mapped
+    rand_interval = args.random_interval # mapped
+    frame_flood = args.flood # mapped
+    num_frames = args.count # mapped
+    rand_frag = args.random_fragment # mapped
+    frag_size = args.fragment_size # mapped
+    sequence_number = args.sequence # mapped
+    rand_sequence = args.randomize_sequence # mapped
+    mac_spoof = args.spoof # mapped
+    reason = args.reason_code # mapped
+    dur_of_attack = args.duration # mapped
+    rand_dur = args.randomize_duration # mapped
 
     # Create a raw socket for capturing packets
     #socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
-    #socket.bind((interface, 0))
+    #socket.bind((interface, 0x0003))
 
     # handle all illogical arguments
-    #if write_file and not (net_discovery or client_discovery or target_macs):
-    #    exit(1)
-    #if frame_flood and (num_frames or time_delay or rand_interval or dur_of_attack or rand_dur or net_discovery or client_discovery):
-    #    exit(1)
-    #if num_frames and client_discovery:
-    #    exit(1)
-    #if time_delay and rand_interval:
-    #    exit(1)
-    #if target_macs and (multiple or client_discovery):
-    #    exit(1)
-    #if rand_frag and frag_size:
-    #    exit(1)
-    #if sequence_number and rand_sequence:
-    #    exit(1)
-    #if dur_of_attack and rand_dur:
-    #    exit(1)
-    #if net_discovery and (client_discovery or target_macs or num_frames):
-    #    exit(1)
+    if write_file and not (net_discovery or client_discovery or target_macs):
+        print("Error: --writefile requires --discover or --target")
+        exit(1)
+    if frame_flood and (num_frames or timedelay or rand_interval or dur_of_attack or rand_dur or net_discovery or client_discovery):
+        print("Error: --flood requires no other arguments")
+        exit(1)
+    if num_frames and client_discovery:
+        print("Error: --client-discover requires no other arguments")
+        exit(1)
+    if timedelay and rand_interval:
+        print("Error: --random-interval requires no other arguments")
+        exit(1)
+    if target_macs and (multiple or client_discovery):
+        print("Error: --target requires no other arguments")
+        exit(1)
+    if rand_frag and frag_size:
+        print("Error: --random-fragment requires no other arguments")
+        exit(1)
+    if sequence_number and rand_sequence:
+        print("Error: --sequence requires no other arguments")
+        exit(1)
+    if dur_of_attack and rand_dur:
+        print("Error: --duration requires no other arguments")
+        exit(1)
+    if net_discovery and (client_discovery or target_macs or num_frames):
+        print("Error: --discover requires no other arguments")
+        exit(1)
     
     # start logic
     if net_discovery:
@@ -116,8 +128,36 @@ def main():
         xmac = convert.machex(network_bssid)
         mac.bssid(xmac)
     if multiple:
-        # in development
         input.multiple_input(multiple)
-
+    if broadcast_attack:
+        massatk.broadcast()
+    if timedelay:
+        timer.time_delay(timedelay)
+    if rand_interval:
+        timer.randomtime_delay()
+    if frame_flood:
+        massatk.deauthflood(frame_flood)
+    if num_frames:
+        timer.user_frames(num_frames)
+    if rand_frag:
+        framecontrol.randomfragment()
+    if frag_size:
+        framecontrol.userfragment(frag_size)
+    if sequence_number:
+        framecontrol.sequenceinput(sequence_number)
+    if rand_sequence:
+        framecontrol.randomsequence()
+    if mac_spoof:
+        xmac = convert.machex(mac_spoof)
+        mac.macspoof(xmac)
+    if reason:
+        input.reasoncode_input(reason)
+    if dur_of_attack:
+        timer.duration_input(dur_of_attack)
+    if rand_dur:
+        timer.random_duration()
+    
+    #dur_of_attack = args.duration
+    #rand_dur = args.randomize_duration
 if __name__ == "__main__":
     main()
