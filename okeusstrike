@@ -102,12 +102,20 @@ def main():
     if dur_of_attack and rand_dur:
         print("Error: can't have both --duration and --randomize-duration")
         exit(1)
-    if net_discovery and (client_discovery or net_channel or target_macs or source_mac or network_bssid or multiple or broadcast_attack or timedelay or rand_interval or frame_flood or num_frames or rand_frag or frag_size or sequence_number or mac_spoof or rand_sequence or reason or dur_of_attack or rand_dur):
+    if net_discovery and (client_discovery or net_channel or target_macs or source_mac or network_bssid or multiple or broadcast_attack or timedelay or rand_interval
+    or frame_flood or num_frames or rand_frag or frag_size or sequence_number or mac_spoof or rand_sequence or reason or dur_of_attack or rand_dur):
         print("Error: --discover requires no other arguments")
         exit(1)
     if ((target_macs or multiple) and network_bssid) and not source_mac: # allows source mac address to be optional
         source_mac = network_bssid
-    
+    if (power_level or broadcast_attack or timedelay or rand_interval or frame_flood or num_frames or
+    rand_frag or frag_size or sequence_number or rand_sequence or mac_spoof or reason or dur_of_attack or rand_dur) and not (target_macs or multiple):
+        print("Error: target input required") # requires target input for most operations
+        exit(1)
+    if (power_level or broadcast_attack or timedelay or rand_interval or frame_flood or num_frames or
+    rand_frag or frag_size or sequence_number or rand_sequence or mac_spoof or reason or dur_of_attack or rand_dur) and not network_bssid:
+        print("Error: network BSSID required") # requires network BSSID for most operations
+        exit(1)
     
     # start logic
     if net_discovery:
