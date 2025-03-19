@@ -79,32 +79,35 @@ def main():
 
     # handle all illogical arguments
     if write_file and not (net_discovery or client_discovery or target_macs):
-        print("Error: --writefile requires --discover or --target")
+        print("Error: --writefile requires --discover, --client-discover, or --target")
         exit(1)
-    if frame_flood and (num_frames or timedelay or rand_interval or dur_of_attack or rand_dur or net_discovery or client_discovery):
+    if frame_flood and (num_frames or timedelay or rand_interval or dur_of_attack or rand_dur):
         print("Error: --flood requires no other arguments")
         exit(1)
-    if num_frames and client_discovery:
+    if client_discovery and (target_macs or source_mac or multiple or broadcast_attack or timedelay or rand_interval or frame_flood or num_frames or rand_frag or frag_size or sequence_number or mac_spoof or rand_sequence or reason or dur_of_attack or rand_dur):
         print("Error: --client-discover requires no other arguments")
         exit(1)
     if timedelay and rand_interval:
         print("Error: --random-interval requires no other arguments")
         exit(1)
-    if target_macs and (multiple or client_discovery):
-        print("Error: --target requires no other arguments")
+    if target_macs and multiple:
+        print("Error: can't have both --target and --multiple") 
         exit(1)
     if rand_frag and frag_size:
-        print("Error: --random-fragment requires no other arguments")
+        print("Error: can't have both --fragment-size and --random-fragment")
         exit(1)
     if sequence_number and rand_sequence:
-        print("Error: --sequence requires no other arguments")
+        print("Error: can't have both --sequence and --randomize-sequence")
         exit(1)
     if dur_of_attack and rand_dur:
-        print("Error: --duration requires no other arguments")
+        print("Error: can't have both --duration and --randomize-duration")
         exit(1)
-    if net_discovery and (client_discovery or target_macs or num_frames):
+    if net_discovery and (client_discovery or net_channel or target_macs or source_mac or network_bssid or multiple or broadcast_attack or timedelay or rand_interval or frame_flood or num_frames or rand_frag or frag_size or sequence_number or mac_spoof or rand_sequence or reason or dur_of_attack or rand_dur):
         print("Error: --discover requires no other arguments")
         exit(1)
+    if ((target_macs or multiple) and network_bssid) and not source_mac: # allows source mac address to be optional
+        source_mac = network_bssid
+    
     
     # start logic
     if net_discovery:

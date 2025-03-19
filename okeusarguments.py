@@ -28,7 +28,7 @@ def parse_arguments():
     parser.add_argument("-i", "--interface", dest="netinterface", required=True, metavar="<INTERFACE>", type=str, help="Network interface to use")
  
     parser.add_argument("-d", "--discover", dest="discover_networks", action="store_true", help="Discover available networks")
-    parser.add_argument("--client-discovery", dest="client_discover", metavar="<Network_BSSID>", type=str, help="Scan for clients on Network BSSID")    
+    parser.add_argument("--client-discover", dest="client_discover", metavar="<Network_BSSID>", type=str, help="Scan for clients on Network BSSID")    
     parser.add_argument("-c", "--channel", dest="channel", metavar="<CHANNEL_NUMBER>", type=int, help="Channel to use")
     parser.add_argument("-p", "--power", dest="power", metavar="<POWER_LEVEL>", type=int, help="Set the transmit power in dBm")
 
@@ -43,8 +43,8 @@ def parse_arguments():
     parser.add_argument("--flood", dest="flood", type=int, metavar="<TIME_IN_SECONDS>", help="Flood attack with time duration in seconds, cannot be used with --count, default is a 5 second frame flood")
     parser.add_argument("--count", dest="count", type=int, metavar="<INT>", help="Number of frames to send, cannot be used with --flood")
 
-    parser.add_argument("--random-fragment", dest="random_fragment", action="store_true", help="Randomize fragment size")
     parser.add_argument("--fragment-size", dest="fragment_size", metavar="<INT>", type=int, help="Fragment size")
+    parser.add_argument("--random-fragment", dest="random_fragment", action="store_true", help="Randomize fragment size")
     parser.add_argument("--sequence", dest="sequence", type=int, metavar="<SEQUENCE_NUMBER>", help="Sequence number for deauthentication frame, default is None")
     parser.add_argument("--random-sequence", dest="randomize_sequence", action="store_true", help="Randomize the sequence number")    
 

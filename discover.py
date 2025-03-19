@@ -1,7 +1,7 @@
 import socket
 
 def disc():
-    print(f"disc() - {disc}")
+    print(f"disc()")
 
 def client_disc(bssid):
     print(f"client_disc({bssid})")
