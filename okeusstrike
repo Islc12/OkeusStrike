@@ -119,7 +119,7 @@ def main():
     
     # start logic
     if net_discovery:
-        discover.disc()
+        discover.disc(interface)
     if write_file:
         output.create_file(write_file)
     if client_discovery:
