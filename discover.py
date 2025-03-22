@@ -10,8 +10,8 @@ def disc(interface):
         disc_net = set() # set to store unique network names - set is used to avoid duplicates
 
         print("\nScanning for networks, press CTRL+C to stop\n")
-        print(f"{'BSSID':<20}{'SSID'.center(20)}{'Channel'.center(10)}{'Frequency Band'.center(16)}{'Signal Strength'.center(20)}{'MFP Enabled'.rjust(12)}")
-        print("-" * 100)
+        print(f"{'BSSID':<20}{'SSID'.center(20)}{'Channel'.center(10)}{'Frequency Band'.center(16)}{'Signal Strength'.center(20)}{'MFP Required'.center(12)}{'MFP Enabled'.rjust(14)}")
+        print("-" * 112)
         while True:
             try:
                 p = s.recvfrom(2048)[0] # recieves packet from socket, up to 2048 bytes, extracts raw packet data
@@ -19,7 +19,52 @@ def disc(interface):
                 # needed to locate the size of the radiotap header to offset the  frame control field
                 rt_len = int.from_bytes(p[2:4], "little")  # Extract radiotap header length, bytes 2 and 3, little endian format
                 chanfreq = int.from_bytes(p[18:20], "little") # Extract channel frequency, bytes 18 and 19, little endian format
-                sigstr = p[22] # Extract signal strength, byte 22
+                sig = p[22] # Extract signal strength, byte 22
+                sigstr = int(sig) - 256 # Convert signal strength to dBm
+
+                # Parse the MAC header and RSN capabilities to determine MFP support
+                mac_head = rt_len  # Radiotap header length
+                fcf = p[mac_head:mac_head + 2]  # Frame Control Field (2 bytes)
+                fcf_flags = int.from_bytes(fcf, "little")  # Convert FCF to an integer
+                mac_head_len = 24  # Base MAC header length
+
+                # Check the To DS and From DS flags (bits 8 and 9 of FCF)
+                to_ds = (fcf_flags & 0x0100) >> 8
+                from_ds = (fcf_flags & 0x0200) >> 9
+                if to_ds and from_ds:
+                    mac_head_len += 6  # Add Address 4 field (6 bytes)
+
+                # Check QoS Control (bit 12 of FCF)
+                qos_control = (fcf_flags & 0x1000) >> 12
+                if qos_control:
+                    mac_head_len += 2  # Add QoS Control field (2 bytes)
+
+                # Check HT Control (bit 13 of FCF)
+                ht_control = (fcf_flags & 0x2000) >> 13
+                if ht_control:
+                    mac_head_len += 4  # Add HT Control field (4 bytes)
+
+                # Move to RSN Capabilities
+                rsn_start = mac_head + mac_head_len
+
+                # Find RSN Information Element (tag 0x30) starting from RSN start
+                rsn_tag = 0x30
+                rsn_index = p.find(bytes([rsn_tag]), rsn_start)
+
+                # Extract RSN Information Element length
+                length = p[rsn_index + 1]  # Length of RSN IE
+                rsn_data = p[rsn_index + 2:rsn_index + 2 + length]
+
+                # Extract RSN Capabilities (last 2 bytes of RSN data)
+                rsn_capabilities = int.from_bytes(rsn_data[-2:], "little")
+
+                # Determine MFP support
+                mfp_capable = (rsn_capabilities & 0x0080) >> 7  # Bit 7
+                mfp_required = (rsn_capabilities & 0x0100) >> 8  # Bit 8
+
+                # Map results to human-readable values
+                mfp_enabled = "Y" if mfp_capable else "N"
+                mfp_required = "Y" if mfp_required else "N"
                 
                 # calculate channel number based on frequency
                 if 2412 <= chanfreq <= 2472:
@@ -42,7 +87,7 @@ def disc(interface):
                     ssid = "".join(chr(x) if chr(x) in string.printable else "" for x in ssid_raw) # convert ssid bytes to string
                     
                     if (bssid, ssid) not in disc_net: # check if network has already been discovered
-                        print(f"{bssid:<20}{ssid.center(20)}{str(channel).center(10)}{freq_band.center(16)}{(str(sigstr) + ' dBm').center(20)}{mfp_enabled.rjust(12)}") 
+                        print(f"{bssid:<20}{ssid.center(20)}{str(channel).center(10)}{freq_band.center(16)}{(str(sigstr) + ' dBm').center(20)}{mfp_required.center(12)}{mfp_enabled.rjust(14)}") # print network info
                         disc_net.add((bssid, ssid)) # if not discovered, add to set
     
             # used to handle network interuptions - typically caused by additional network services such as NetworkManager
@@ -58,8 +103,8 @@ def disc(interface):
     except KeyboardInterrupt: # allows the program to gracefully handle keyboard interrupts
         print("\nScan completed.")
 
-    #except Exception as e: # handles any other exceptions that may occur
-        #print(f"An error occurred: {e}")    
+    except Exception as e: # handles any other exceptions that may occur
+        print(f"An error occurred: {e}")
     
     finally: # gives a final cleanup step
         s.close() # closes out the socket
