@@ -9,13 +9,27 @@ def disc(interface):
 
         disc_net = set() # set to store unique network names - set is used to avoid duplicates
 
-        print("Scanning for networks, press CTRL+C to stop")
+        print("\nScanning for networks, press CTRL+C to stop\n")
+        print(f"{'BSSID':<20}{'SSID'.center(20)}{'Channel'.center(10)}{'Frequency Band'.center(16)}{'Signal Strength'.center(20)}{'MFP Enabled'.rjust(12)}")
+        print("-" * 100)
         while True:
             try:
                 p = s.recvfrom(2048)[0] # recieves packet from socket, up to 2048 bytes, extracts raw packet data
 
                 # needed to locate the size of the radiotap header to offset the  frame control field
                 rt_len = int.from_bytes(p[2:4], "little")  # Extract radiotap header length, bytes 2 and 3, little endian format
+                chanfreq = int.from_bytes(p[18:20], "little") # Extract channel frequency, bytes 18 and 19, little endian format
+                sigstr = p[22] # Extract signal strength, byte 22
+                
+                # calculate channel number based on frequency
+                if 2412 <= chanfreq <= 2472:
+                    channel = (chanfreq - 2407) // 5
+                    freq_band = "2.4 GHz"
+                elif 5170 <= chanfreq <= 5825:
+                    channel = (chanfreq - 5000) // 5
+                    freq_band = "5 GHz"
+                else:
+                    channel = None
             
                 frame_ctrl = p[rt_len:rt_len + 2] # collects the first two bytes of the frame control field
                 frame_type = (frame_ctrl[0] >> 2) & 0x03 # checks bits 2 and 3 of the first byte to determine frame type (ie management, control, data)
@@ -28,7 +42,7 @@ def disc(interface):
                     ssid = "".join(chr(x) if chr(x) in string.printable else "" for x in ssid_raw) # convert ssid bytes to string
                     
                     if (bssid, ssid) not in disc_net: # check if network has already been discovered
-                        print(f"BSSID: {bssid}\tSSID: {ssid}") 
+                        print(f"{bssid:<20}{ssid.center(20)}{str(channel).center(10)}{freq_band.center(16)}{(str(sigstr) + ' dBm').center(20)}{mfp_enabled.rjust(12)}") 
                         disc_net.add((bssid, ssid)) # if not discovered, add to set
     
             # used to handle network interuptions - typically caused by additional network services such as NetworkManager
@@ -44,8 +58,8 @@ def disc(interface):
     except KeyboardInterrupt: # allows the program to gracefully handle keyboard interrupts
         print("\nScan completed.")
 
-    except Exception as e: # handles any other exceptions that may occur
-        print(f"An error occurred: {e}")    
+    #except Exception as e: # handles any other exceptions that may occur
+        #print(f"An error occurred: {e}")    
     
     finally: # gives a final cleanup step
         s.close() # closes out the socket
