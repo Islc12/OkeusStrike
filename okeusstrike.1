@@ -1,0 +1,105 @@
+NAME
+    OkeusStrike - Advanced Deauthentication Attack Tool
+
+SYNOPSIS
+    okeus [OPTIONS] -i [INTERFACE]
+
+DESCRIPTION
+    OkeusStrike is a powerful and versatile tool for performing deauthentication attacks, and in some cases DoS attacks, on wireless networks. It was 
+    designed to be highly customizable and has a wide range of features to suit different attack scenarios. OkeusStrike was designed with scripting in
+    mind and can be integrated into other scripts and tools. Certain "luxury" features found in other WiFi attack tools are not included  in OkeusStrike,
+    and instead are left to the user to implement using other tools or designing a custom tool themselves. OkeusStrike was written with the intent of
+    being used for Penetration Testing, Ethical Hacking, and Red Team assessments. It is not intended for malicious purposes. 
+
+USAGE
+    To use OkeusStrke, you must first enable monitor mode on your wireless interface. This can be done using the ip command suite or whatever external tool
+    you prefer. OkeusStrike will not work without monitor mode enabled. In addition, OkeusStrike must be run as root. 
+
+OPTIONS
+    -h, --help 
+        Prints the help menu
+
+    -v, --verbose
+        Enables verbose output
+    
+    -w <prefix>, --write <prefix>
+        Writes the output of the program to a file with a user input prefix. The file will be created in the current working directory.
+        The file will be named <prefix>_<YYmmdd_HHMM> and will be written in pcap format.
+
+    -i <interface>, --interface <interface>
+        Specifies the wireless interface to use, e.g. wlan1. This option is required for all operations excluding the help option.
+
+    -d, --discover
+        Discovers all available wireless networks in range. This will print the BSSID, SSID, frequency range, channel, signal strength, and whether MFP is
+        requird and if MFP is enabled of all networks in range. Ctrl + C can be used to stop the discovery process.
+
+    --client-discover <network_bssid>
+        Attempts to discover all clients connected to a specific network.
+
+    -c <channel>, --channel <channel>
+        Specifies the network channel to target. Highly recommended to use this option to avoid channel hopping.
+
+    -p <power>, --power <power>
+        Specifies the power level to adjust the wireless interface to.
+
+    -t <target_mac>, --target <target_mac>
+        Specifies the client MAC address to target.
+
+    -s <source_mac>, --source <source_mac>
+        Specifies the source MAC address to use. If not specified, the source MAC will default to the Network BSSID of the target network.
+
+    -n <network_bssid>, --network <network_bssid>  
+        Specifies the network BSSID to associate with the deauthentication attack.
+
+    -b, --broadcast
+       Specifies that the deauthentication attack should be broadcasted to all clients on the target network.
+
+    --time <time_in_ms>
+        Specifies a time delay in milliseconds to wait between sending deauthentication packets. This option can be useful for slowing down the rate of
+        deauthentication frames being sent to the target. 
+
+    --flood <time_in_sec>
+        Sends out a large number of deauthentication packets to the target, flooding them with deauthentication frames for a user specified duration of time.
+        The default time for the flood attack is 5 seconds long. This option cannot be used with --count or --time.
+
+    --count <num_frames>
+        Specifies a number specific number of deauthentication frames to send the target. The default is 5 deauthentication frames. This option cannot be used
+        with --flood.
+
+    --fragment <bytes>
+        Specifies that the deauthentication frames should be fragmented and will be fragmented based on a user supplied size in bytes. This option will automatically
+        add padding for fragment sizes that are odd in number to the frame size or are larger than the frame size. 
+            Example: if the frame size is 50 bytes, the user inputs 26 bytes for the fragment size, OkeusStrike will send (2) 26 byte fragmented frames, with each frame
+        having an extra byte of padding to make up for the odd numbered total. 
+        
+        This is also true for input fragment sizes larger than the frame size, in which case the frame will be padded and fragmented based on the specified
+        fragment size. 
+            Example: if the frame size is 50 bytes, the user inputs 60 bytes for the fragment size, OkeusStrike will send (2) 60 byte fragmented frames, with each
+        frame having 25 bytes of the original frame and 35 bytes of padding. 
+        
+        For fragment sizes are a less than half the size of the original frame size, the frame will be
+        divided into fragments of the specified size and sent in as many fragments as needed to send the entire frame with padding for equal sized fragments.
+            Example: if the frame size is 50 bytes, the user inputs 20 bytes for the fragment size, OkeusStrike will send (3) 20 byte fragmented frames, with each frame
+        an equal amount of padding to make up for the odd numbered total.
+
+        This option can be combined with --sequence (described below) for increased control over the fragmentation of the deauthentication frame.
+
+    --sequence <sequence_number>
+       Specifies the total number of fragmented frames to send from user input. The option will automatically provide padding for odd numbered totals.
+
+            Example: if the frame size is 50 bytes, the user inputs (4) for the sequence number, OkeusStrike will send (4) frames of 13 bytes each, with each frame sending
+       a portion of the origial frame and padded to account for the odd numbered total.
+
+       If the user inputs a sequence number greater than the size of the frame, then OkeusStrike will send as many fragmented frames as possible with the original frame
+       data and then send the remaining frames with padding to make up the total number of frames specified.
+            Example: if the frame size is 50 bytes, the user inputs (60) for the sequence number, OkeusStrike will send the first 50 frames with 1 byte each of the original
+       data, and the remaining 10 frames will be sent with 1 byte of padding each.
+
+        This option can be combined with --fragment (described above) for increased control over the fragmentation of the deauthentication frame.
+
+    --reason-code <[1-14]>
+        Specifies the reason code to use for the deauthentication frame, choices range from 1 to 14 inclusive. The default reason code is 3.
+
+    --duration <duration_in_ms>
+        Specifies the duration of the deauthentication attack in milliseconds. OkeusStrike will automatically send (1) deauthentication frame every 25 milliseconds. 
+        This can be adjusted with the --time option to increase or slow down the rate of deauthentication frames being sent.

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# WiFiSecAudit - okeusstrike
+# OkeusStrike - Advanced Deauthentication Attack Tool - okeus
 # Copyright (C) 2025 Richard Smith (Islc12)
 #
 # This program is free software: you can redistribute it and/or modify
@@ -58,62 +58,37 @@ def main():
     target_macs = args.target # mapped
     source_mac = args.ap_source # mapped
     network_bssid = args.net_bssid # mapped
-    multiple = args.multiple_file # sort of mapped - still need to read the file, parse it into machex and then into target_macs
     broadcast_attack =  args.broadcast # mapped
     timedelay = args.time # mapped
-    rand_interval = args.random_interval # mapped
     frame_flood = args.flood # mapped
     num_frames = args.count # mapped
-    rand_frag = args.random_fragment # mapped
     frag_size = args.fragment_size # mapped
     sequence_number = args.sequence # mapped
-    rand_sequence = args.randomize_sequence # mapped
-    mac_spoof = args.spoof # mapped
     reason = args.reason_code # mapped
     dur_of_attack = args.duration # mapped
-    rand_dur = args.randomize_duration # mapped
-
-    # Create a raw socket for capturing packets
-    #socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
-    #socket.bind((interface, 0x0003))
 
     # handle all illogical arguments
     if write_file and not (net_discovery or client_discovery or target_macs):
         print("Error: --writefile requires --discover, --client-discover, or --target")
         exit(1)
-    if frame_flood and (num_frames or timedelay or rand_interval or dur_of_attack or rand_dur):
+    if frame_flood and (num_frames or timedelay or dur_of_attack):
         print("Error: --flood requires no other arguments")
         exit(1)
-    if client_discovery and (target_macs or source_mac or multiple or broadcast_attack or timedelay or rand_interval or frame_flood or num_frames or rand_frag or frag_size or sequence_number or mac_spoof or rand_sequence or reason or dur_of_attack or rand_dur):
+    if client_discovery and (target_macs or source_mac or broadcast_attack or timedelay or frame_flood or num_frames or frag_size or sequence_number or reason or dur_of_attack):
         print("Error: --client-discover requires no other arguments")
         exit(1)
-    if timedelay and rand_interval:
-        print("Error: --random-interval requires no other arguments")
-        exit(1)
-    if target_macs and multiple:
-        print("Error: can't have both --target and --multiple") 
-        exit(1)
-    if rand_frag and frag_size:
-        print("Error: can't have both --fragment-size and --random-fragment")
-        exit(1)
-    if sequence_number and rand_sequence:
-        print("Error: can't have both --sequence and --randomize-sequence")
-        exit(1)
-    if dur_of_attack and rand_dur:
-        print("Error: can't have both --duration and --randomize-duration")
-        exit(1)
-    if net_discovery and (client_discovery or net_channel or target_macs or source_mac or network_bssid or multiple or broadcast_attack or timedelay or rand_interval
-    or frame_flood or num_frames or rand_frag or frag_size or sequence_number or mac_spoof or rand_sequence or reason or dur_of_attack or rand_dur):
+    if net_discovery and (client_discovery or net_channel or target_macs or source_mac or network_bssid or broadcast_attack or timedelay
+    or frame_flood or num_frames or frag_size or sequence_number or reason or dur_of_attack):
         print("Error: --discover requires no other arguments")
         exit(1)
-    if ((target_macs or multiple) and network_bssid) and not source_mac: # allows source mac address to be optional
+    if (target_macs and network_bssid) and not source_mac: # allows source mac address to be optional
         source_mac = network_bssid
-    if (power_level or broadcast_attack or timedelay or rand_interval or frame_flood or num_frames or
-    rand_frag or frag_size or sequence_number or rand_sequence or mac_spoof or reason or dur_of_attack or rand_dur) and not (target_macs or multiple):
+    if (power_level or broadcast_attack or timedelay or frame_flood or num_frames or
+    frag_size or sequence_number or reason or dur_of_attack) and not target_macs:
         print("Error: target input required") # requires target input for most operations
         exit(1)
-    if (power_level or broadcast_attack or timedelay or rand_interval or frame_flood or num_frames or
-    rand_frag or frag_size or sequence_number or rand_sequence or mac_spoof or reason or dur_of_attack or rand_dur) and not network_bssid:
+    if (power_level or broadcast_attack or timedelay or frame_flood or num_frames or
+    frag_size or sequence_number or reason or durof_attack) and not network_bssid:
         print("Error: network BSSID required") # requires network BSSID for most operations
         exit(1)
     
@@ -124,7 +99,7 @@ def main():
         output.create_file(write_file)
     if client_discovery:
         xmac = convert.machex(client_discovery)
-        discover.client_disc(xmac)
+        discover.client_disc(xmac, interface)
     if net_channel:
         powerchan.channelinput(net_channel)
     if power_level:
@@ -138,37 +113,22 @@ def main():
     if network_bssid:
         xmac = convert.machex(network_bssid)
         mac.bssid(xmac)
-    if multiple:
-        input.multiple_input(multiple)
     if broadcast_attack:
         massatk.broadcast()
     if timedelay:
         timer.time_delay(timedelay)
-    if rand_interval:
-        timer.randomtime_delay()
     if frame_flood:
         massatk.deauthflood(frame_flood)
     if num_frames:
         timer.user_frames(num_frames)
-    if rand_frag:
-        framecontrol.randomfragment()
     if frag_size:
         framecontrol.userfragment(frag_size)
     if sequence_number:
         framecontrol.sequenceinput(sequence_number)
-    if rand_sequence:
-        framecontrol.randomsequence()
-    if mac_spoof:
-        xmac = convert.machex(mac_spoof)
-        mac.macspoof(xmac)
     if reason:
         input.reasoncode_input(reason)
     if dur_of_attack:
         timer.duration_input(dur_of_attack)
-    if rand_dur:
-        timer.random_duration()
     
-    #dur_of_attack = args.duration
-    #rand_dur = args.randomize_duration
 if __name__ == "__main__":
     main()

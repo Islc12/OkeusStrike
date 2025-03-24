@@ -1,3 +1,19 @@
+# OkeusStrike - Advanced Deauthentication Attack Tool - discover.py
+# Copyright (C) 2025 Richard Smith (Islc12)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
+
 import socket
 import string
 import time
@@ -44,8 +60,7 @@ def disc(interface):
                 if ht_control:
                     mac_head_len += 4  # Add HT Control field (4 bytes)
 
-                # Move to RSN Capabilities
-                rsn_start = mac_head + mac_head_len
+                rsn_start = mac_head + mac_head_len # Move to RSN Capabilities
 
                 # Find RSN Information Element (tag 0x30) starting from RSN start
                 rsn_tag = 0x30
@@ -70,7 +85,7 @@ def disc(interface):
                 if 2412 <= chanfreq <= 2472:
                     channel = (chanfreq - 2407) // 5
                     freq_band = "2.4 GHz"
-                elif 5170 <= chanfreq <= 5825:
+                elif 5170 <= chanfreq <= 5825: # This won't work for all wifi adapters, as most only seem to pickup 2.4 GHz in monitor mode
                     channel = (chanfreq - 5000) // 5
                     freq_band = "5 GHz"
                 else:
@@ -110,8 +125,37 @@ def disc(interface):
         s.close() # closes out the socket
 
 
-def client_disc(bssid):
-    print(f"client_disc({bssid})")
+def client_disc(bssid, interface):
+    try:
+        s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
+        s.bind((interface, 0))
+
+        client_disc = set()
+
+        print("\nScanning for networks, press CTRL+C to stop\n")
+        while True:
+            try:
+                p = s.recvfrom(2048)[0]
+
+                # Enter code here
+
+            except OSError as e:
+                if e.errno == 100:
+                    time.sleep(1)
+                    continue
+                else:
+                    raise e
+            except IndexError:
+                continue
+
+    except KeyboardInterrupt:
+        print("\nScan completed.")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+    finally:
+        s.close()
 
 if __name__  == "__main__":
     disc()
