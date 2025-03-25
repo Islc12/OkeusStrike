@@ -26,8 +26,8 @@ def disc(interface):
         disc_net = set() # set to store unique network names - set is used to avoid duplicates
 
         print("\nScanning for networks, press CTRL+C to stop\n")
-        print(f"{'BSSID':<20}{'SSID'.center(20)}{'Channel'.center(10)}{'Frequency Band'.center(16)}{'Signal Strength'.center(20)}{'MFP Required'.center(12)}{'MFP Enabled'.rjust(14)}")
-        print("-" * 112)
+        print(f"{'BSSID':<20}{'SSID'.center(35)}{'Channel'.center(10)}{'Frequency Band'.center(16)}{'Signal Strength'.center(20)}{'MFP Required'.center(12)}{'MFP Enabled'.rjust(14)}")
+        print("-" * 127)
         while True:
             try:
                 p = s.recvfrom(2048)[0] # recieves packet from socket, up to 2048 bytes, extracts raw packet data
@@ -102,7 +102,7 @@ def disc(interface):
                     ssid = "".join(chr(x) if chr(x) in string.printable else "" for x in ssid_raw) # convert ssid bytes to string
                     
                     if (bssid, ssid) not in disc_net: # check if network has already been discovered
-                        print(f"{bssid:<20}{ssid.center(20)}{str(channel).center(10)}{freq_band.center(16)}{(str(sigstr) + ' dBm').center(20)}{mfp_required.center(12)}{mfp_enabled.rjust(14)}") # print network info
+                        print(f"{bssid:<20}{ssid.center(35)}{str(channel).center(10)}{freq_band.center(16)}{(str(sigstr) + ' dBm').center(20)}{mfp_required.center(12)}{mfp_enabled.rjust(14)}") # print network info
                         disc_net.add((bssid, ssid)) # if not discovered, add to set
     
             # used to handle network interuptions - typically caused by additional network services such as NetworkManager
@@ -126,6 +126,7 @@ def disc(interface):
 
 
 def client_disc(bssid, interface):
+    pass
     try:
         s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
         s.bind((interface, 0))
@@ -133,11 +134,28 @@ def client_disc(bssid, interface):
         client_disc = set()
 
         print("\nScanning for networks, press CTRL+C to stop\n")
+        print(f"{'Client':<20}{'Source':<20}{'BSSID':<20}")
         while True:
             try:
                 p = s.recvfrom(2048)[0]
 
-                # Enter code here
+                frame_control = p[0:2]
+                frame_type = (frame_control[0] & 0b00001100) >> 2
+                frame_subtype = (frame_control[0] & 0b11110000) >> 4
+
+                if frame_type in (0, 2):
+                    to_ds = (frame_control[1] & 0b00000001) >> 0
+                    from_ds = (frame_control[1] & 0b00000010) >> 1
+
+                    if to_ds in (0, 1) and from_ds in (0, 1):
+                        dest_mac = p[4:10]
+                        src_mac = p[10:16]
+                        bssid_mac = p[16:22]
+                    else:
+                        continue
+
+                    if bssid_mac == bssid:
+                        print(f"{dest_mac:<20}{src_mac.center(20)}{bssid_mac.center(20)}")
 
             except OSError as e:
                 if e.errno == 100:

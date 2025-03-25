@@ -70,17 +70,17 @@ OPTIONS
         Specifies that the deauthentication frames should be fragmented and will be fragmented based on a user supplied size in bytes. This option will automatically
         add padding for fragment sizes that are odd in number to the frame size or are larger than the frame size. 
             Example: if the frame size is 50 bytes, the user inputs 26 bytes for the fragment size, OkeusStrike will send (2) 26 byte fragmented frames, with each frame
-        having an extra byte of padding to make up for the odd numbered total. 
+            having an extra byte of padding to make up for the odd numbered total. 
         
         This is also true for input fragment sizes larger than the frame size, in which case the frame will be padded and fragmented based on the specified
         fragment size. 
             Example: if the frame size is 50 bytes, the user inputs 60 bytes for the fragment size, OkeusStrike will send (2) 60 byte fragmented frames, with each
-        frame having 25 bytes of the original frame and 35 bytes of padding. 
+            frame having 25 bytes of the original frame and 35 bytes of padding. 
         
         For fragment sizes are a less than half the size of the original frame size, the frame will be
         divided into fragments of the specified size and sent in as many fragments as needed to send the entire frame with padding for equal sized fragments.
-            Example: if the frame size is 50 bytes, the user inputs 20 bytes for the fragment size, OkeusStrike will send (3) 20 byte fragmented frames, with each frame
-        an equal amount of padding to make up for the odd numbered total.
+            Example: if the frame size is 50 bytes, the user inputs 24 bytes for the fragment size, OkeusStrike will send (2) 24 byte fragmented frames, followed by (1) 
+            2 byte fragmented frame, for a total of (3) fragmented frames.
 
         This option can be combined with --sequence (described below) for increased control over the fragmentation of the deauthentication frame.
 
@@ -88,12 +88,12 @@ OPTIONS
        Specifies the total number of fragmented frames to send from user input. The option will automatically provide padding for odd numbered totals.
 
             Example: if the frame size is 50 bytes, the user inputs (4) for the sequence number, OkeusStrike will send (4) frames of 13 bytes each, with each frame sending
-       a portion of the origial frame and padded to account for the odd numbered total.
+            a portion of the origial frame and padded to account for the odd numbered total.
 
-       If the user inputs a sequence number greater than the size of the frame, then OkeusStrike will send as many fragmented frames as possible with the original frame
-       data and then send the remaining frames with padding to make up the total number of frames specified.
+        If the user inputs a sequence number greater than the size of the frame, then OkeusStrike will send as many fragmented frames as possible with the original frame
+        data and then send the remaining frames with padding to make up the total number of frames specified.
             Example: if the frame size is 50 bytes, the user inputs (60) for the sequence number, OkeusStrike will send the first 50 frames with 1 byte each of the original
-       data, and the remaining 10 frames will be sent with 1 byte of padding each.
+            data, and the remaining 10 frames will be sent with 1 byte of padding each.
 
         This option can be combined with --fragment (described above) for increased control over the fragmentation of the deauthentication frame.
 

@@ -88,7 +88,7 @@ def main():
         print("Error: target input required") # requires target input for most operations
         exit(1)
     if (power_level or broadcast_attack or timedelay or frame_flood or num_frames or
-    frag_size or sequence_number or reason or durof_attack) and not network_bssid:
+    frag_size or sequence_number or reason or dur_of_attack) and not network_bssid:
         print("Error: network BSSID required") # requires network BSSID for most operations
         exit(1)
     
