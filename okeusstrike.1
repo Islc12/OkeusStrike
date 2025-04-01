@@ -21,32 +21,15 @@ OPTIONS
 
     -v, --verbose
         Enables verbose output
-    
-    -w <prefix>, --write <prefix>
-        Writes the output of the program to a file with a user input prefix. The file will be created in the current working directory.
-        The file will be named <prefix>_<YYmmdd_HHMM> and will be written in pcap format.
 
     -i <interface>, --interface <interface>
         Specifies the wireless interface to use, e.g. wlan1. This option is required for all operations excluding the help option.
 
-    -d, --discover
-        Discovers all available wireless networks in range. This will print the BSSID, SSID, frequency range, channel, signal strength, and whether MFP is
-        requird and if MFP is enabled of all networks in range. Ctrl + C can be used to stop the discovery process.
-
-    --client-discover <network_bssid>
-        Attempts to discover all clients connected to a specific network.
-
-    -c <channel>, --channel <channel>
-        Specifies the network channel to target. Highly recommended to use this option to avoid channel hopping.
-
-    -p <power>, --power <power>
-        Specifies the power level to adjust the wireless interface to.
-
-    -t <target_mac>, --target <target_mac>
+    -c <client_mac>, --client <client_mac>
         Specifies the client MAC address to target.
 
     -s <source_mac>, --source <source_mac>
-        Specifies the source MAC address to use. If not specified, the source MAC will default to the Network BSSID of the target network.
+        Specifies the source AP MAC address to use. If not specified, the source MAC will default to the Network BSSID of the target network.
 
     -n <network_bssid>, --network <network_bssid>  
         Specifies the network BSSID to associate with the deauthentication attack.

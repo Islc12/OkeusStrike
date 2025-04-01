@@ -39,17 +39,9 @@ def parse_arguments():
 
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output")
 
-    parser.add_argument("-w", "--write", type=str, metavar="<USER_INPUT>_YYmmdd_HHMMSS.pcap", dest="writefile", help="Write capture data to pcap file")
-
     parser.add_argument("-i", "--interface", dest="netinterface", required=True, metavar="<INTERFACE>", type=str, help="Network interface to use")
- 
-    parser.add_argument("-d", "--discover", dest="discover_networks", action="store_true", help="Discover available networks")
-    parser.add_argument("--client-discover", dest="client_discover", metavar="<NETWORK_BSSID>", type=str, help="Scan for clients on Network BSSID")    
 
-    parser.add_argument("-c", "--channel", dest="channel", metavar="<CHANNEL_NUMBER>", type=int, help="Channel to use")
-    parser.add_argument("-p", "--power", dest="power", metavar="<POWER_LEVEL>", type=int, help="Set the transmit power in dBm")
-
-    parser.add_argument("-t", "--target", dest="target", metavar="<TARGET>", nargs="+", type=str, help="Target client MAC address(es)")
+    parser.add_argument("-c", "--client", dest="client", metavar="<CLIENT>", nargs="+", type=str, help="Target client MAC address(es)")
     parser.add_argument("-s", "--source", dest="ap_source", type=str, metavar="<SOURCE_MAC>", help="Source MAC address")
     parser.add_argument("-n", "--network", dest="net_bssid", type=str, metavar="<BSSID>", help="BSSID of the target network")
     parser.add_argument("-b", "--broadcast", action="store_true", dest="broadcast", help="Broadcast attack")

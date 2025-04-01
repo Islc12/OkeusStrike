@@ -19,15 +19,14 @@
 # not all these imports are used in the final code, they are here until I determine exactly which file they will be used in
 import socket  # Low-level networking with raw sockets
 import okeusarguments # Parsing command-line arguments from arguments.py
-import discover # Network discovery functions from discovery.py
 import convert # MAC address conversion from convert.py
-import powerchan # Power level adjustment from powerchange.py
-import output # File output functions from output.py
 import mac # Handles target, source and bssid flags
-import input # Handles file input and reason codes
+import reason # Handles reason codes
 import massatk # Handles flooding and broadcast attacks
 import timer # Handles time-based attack types
 import framecontrol # Handles fragmentation and sequencing
+
+import concurrent.futures
 
 import os  # Interact with the underlying OS
 import time  # Time-based attack types (delays, duration, etc.)
@@ -49,12 +48,7 @@ if os.geteuid() != 0:
 def main():
     args = okeusarguments.parse_arguments()
     # Parse command-line arguments
-    write_file = args.writefile # mapped
     interface = args.netinterface # handled automatically
-    net_discovery = args.discover_networks # mapped
-    client_discovery = args.client_discover # mapped
-    net_channel = args.channel # mapped
-    power_level = args.power # mapped
     target_macs = args.target # mapped
     source_mac = args.ap_source # mapped
     network_bssid = args.net_bssid # mapped
@@ -64,22 +58,12 @@ def main():
     num_frames = args.count # mapped
     frag_size = args.fragment_size # mapped
     sequence_number = args.sequence # mapped
-    reason = args.reason_code # mapped
+    reason_code = args.reason_code # mapped
     dur_of_attack = args.duration # mapped
 
     # handle all illogical arguments
-    if write_file and not (net_discovery or client_discovery or target_macs):
-        print("Error: --writefile requires --discover, --client-discover, or --target")
-        exit(1)
     if frame_flood and (num_frames or timedelay or dur_of_attack):
         print("Error: --flood requires no other arguments")
-        exit(1)
-    if client_discovery and (target_macs or source_mac or broadcast_attack or timedelay or frame_flood or num_frames or frag_size or sequence_number or reason or dur_of_attack):
-        print("Error: --client-discover requires no other arguments")
-        exit(1)
-    if net_discovery and (client_discovery or net_channel or target_macs or source_mac or network_bssid or broadcast_attack or timedelay
-    or frame_flood or num_frames or frag_size or sequence_number or reason or dur_of_attack):
-        print("Error: --discover requires no other arguments")
         exit(1)
     if (target_macs and network_bssid) and not source_mac: # allows source mac address to be optional
         source_mac = network_bssid
@@ -93,17 +77,6 @@ def main():
         exit(1)
     
     # start logic
-    if net_discovery:
-        discover.disc(interface)
-    if write_file:
-        output.create_file(write_file)
-    if client_discovery:
-        xmac = convert.machex(client_discovery)
-        discover.client_disc(xmac, interface)
-    if net_channel:
-        powerchan.channelinput(net_channel)
-    if power_level:
-        powerchan.powerinput(power_level)
     if target_macs:
         xmac = convert.machex(target_macs)
         mac.target(xmac)
@@ -125,8 +98,8 @@ def main():
         framecontrol.userfragment(frag_size)
     if sequence_number:
         framecontrol.sequenceinput(sequence_number)
-    if reason:
-        input.reasoncode_input(reason)
+    if reason_code:
+        reason.reasoncode_input(reason_code)
     if dur_of_attack:
         timer.duration_input(dur_of_attack)
     
