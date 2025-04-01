@@ -26,13 +26,13 @@ see the progress and provide feedback.
 
 ## Installation Instructions
 
-reserved for later use
+reserved for later use.
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 
 ## Usage Instructions:
 
-reserved for later use
+reserved for later use.
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 
