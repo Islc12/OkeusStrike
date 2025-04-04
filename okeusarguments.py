@@ -39,9 +39,9 @@ def parse_arguments():
 
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output")
 
-    parser.add_argument("-i", "--interface", dest="netinterface", required=True, metavar="<INTERFACE>", type=str, help="Network interface to use")
+    parser.add_argument("-i", "--interface", dest="netinterface", required=True, metavar="<INTERFACE>", type=str, help="Network interface ID")
 
-    parser.add_argument("-c", "--client", dest="client", metavar="<CLIENT>", nargs="+", type=str, help="Target client MAC address(es)")
+    parser.add_argument("-d", "--dest", dest="dest", metavar="<DESTINATION>", nargs="+", type=str, help="Target destination MAC address(es)")
     parser.add_argument("-s", "--source", dest="ap_source", type=str, metavar="<SOURCE_MAC>", help="Source MAC address")
     parser.add_argument("-n", "--network", dest="net_bssid", type=str, metavar="<BSSID>", help="BSSID of the target network")
     parser.add_argument("-b", "--broadcast", action="store_true", dest="broadcast", help="Broadcast attack")
@@ -52,8 +52,8 @@ def parse_arguments():
 
     parser.add_argument("--count", dest="count", type=int, metavar="<INT>", help="Number of frames to send, cannot be used with --flood")
 
-    parser.add_argument("--fragment-size", dest="fragment_size", metavar="<INT>", type=int, help="Fragment size")
-    parser.add_argument("--sequence", dest="sequence", type=int, metavar="<SEQUENCE_NUMBER>", help="Sequence number for deauthentication frame, default is None")
+    parser.add_argument("--fragment-size", dest="fragment_size", choices=range(1,16), metavar="<INT>", type=int, help="Fragment size")
+    parser.add_argument("--sequence", dest="sequence", choices=range(1,4096), type=int, metavar="<SEQUENCE_NUMBER>", help="Sequence number for deauthentication frame, default is None")
 
     parser.add_argument("--reason-code", choices=range(1,15), metavar="<REASON_CODE>", dest="reason_code", type=int, help="Reason code for deauthentication")
 

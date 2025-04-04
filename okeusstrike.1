@@ -9,7 +9,7 @@ DESCRIPTION
     designed to be highly customizable and has a wide range of features to suit different attack scenarios. OkeusStrike was designed with scripting in
     mind and can be integrated into other scripts and tools. Certain "luxury" features found in other WiFi attack tools are not included  in OkeusStrike,
     and instead are left to the user to implement using other tools or designing a custom tool themselves. OkeusStrike was written with the intent of
-    being used for Penetration Testing, Ethical Hacking, and Red Team assessments. It is not intended for malicious purposes. 
+    being used for Penetration Testing, Ethical Hacking, Red Team assessments, or other Network Security Audits. It is not intended for malicious purposes. 
 
 USAGE
     To use OkeusStrke, you must first enable monitor mode on your wireless interface. This can be done using the ip command suite or whatever external tool
@@ -25,7 +25,7 @@ OPTIONS
     -i <interface>, --interface <interface>
         Specifies the wireless interface to use, e.g. wlan1. This option is required for all operations excluding the help option.
 
-    -c <client_mac>, --client <client_mac>
+    -d <dest_mac>, --dest <dest_mac>
         Specifies the client MAC address to target.
 
     -s <source_mac>, --source <source_mac>
@@ -43,7 +43,7 @@ OPTIONS
 
     --flood <time_in_sec>
         Sends out a large number of deauthentication packets to the target, flooding them with deauthentication frames for a user specified duration of time.
-        The default time for the flood attack is 5 seconds long. This option cannot be used with --count or --time.
+        By inputing "-1" the user can flood frames indefintely until ctrl + c is used. This option cannot be used with --count or --time.
 
     --count <num_frames>
         Specifies a number specific number of deauthentication frames to send the target. The default is 5 deauthentication frames. This option cannot be used
@@ -81,7 +81,7 @@ OPTIONS
         This option can be combined with --fragment (described above) for increased control over the fragmentation of the deauthentication frame.
 
     --reason-code <[1-14]>
-        Specifies the reason code to use for the deauthentication frame, choices range from 1 to 14 inclusive. The default reason code is 3.
+        Specifies the reason code to use for the deauthentication frame, choices range from 1 to 14 inclusive.
 
     --duration <duration_in_ms>
         Specifies the duration of the deauthentication attack in milliseconds. OkeusStrike will automatically send (1) deauthentication frame every 25 milliseconds. 

@@ -1,4 +1,4 @@
-# OkeusStrike - Advanced Deauthentication Attack Tool - mac.py
+# OkeusStrike - Advanced Deauthentication Attack Tool - massatk.py
 # Copyright (C) 2025 Richard Smith (Islc12)
 #
 # This program is free software: you can redistribute it and/or modify
@@ -15,15 +15,17 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import socket
-import sys
-import struct
-import binascii
+import time
+from okeus import f_assem
 
-def target(targmac):
-    print(f"targmac() - {targmac}")
+def deauthflood(seconds):
+    if seconds == -1:
+        while True:
+            #spam flooding
+    elif seconds > 0:
+        # flood for {seconds}
+    else:
+        print("Invalid time")
+        exit(1)
+    print(f"Deauth Flood seconds: {seconds}")
 
-def source(sourcemac):
-    print(f"sourcemac({sourcemac})")
-
-def bssid(bssidmac):
-    print(f"bssidmac({bssidmac})")

@@ -1,4 +1,4 @@
-# OkeusStrike - Advanced Deauthentication Attack Tool - massatk.py
+# OkeusStrike - Advanced Deauthentication Attack Tool - rt.py
 # Copyright (C) 2025 Richard Smith (Islc12)
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,16 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-import socket
-import time
+import struct
 
-def deauthflood(seconds):
-    print(f"Deauth Flood seconds: {seconds}")
-
-def broadcast():
-    print("\xFF\xFF\xFF\xFF\xFF\xFF")
-
-if __name__ == "__main__":
-    broadcast()
-    deauthflood()
-
+def rt_head():
+    rth = struct.pack('!8B', 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00)
+    # creates a radiotap header with the minimum length of 8 bytes padded to fill
+    return rth
