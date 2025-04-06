@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # OkeusStrike - Advanced Deauthentication Attack Tool - convert.py
 # Copyright (C) 2025 Richard Smith (Islc12)
 #
@@ -15,18 +17,19 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import re
+import struct
 
 def machex(mac):
-    mac_regex = r"^([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}$" # MAC address regex pattern
+    mac_regex = r"^([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}$|^[0-9a-fA-F]{12}$"  # Allow colon, dash, or plain format
 
     def format_mac(m):
         if not re.match(mac_regex, m):
             print("Error: Invalid MAC address format")
-            print("Correct format: AA:BB:CC:DD:EE:FF, AA-BB-CC-DD-EE-FF, or AAbbccddeeff")
+            print("Correct format: AA:BB:CC:DD:EE:FF, AA-BB-CC-DD-EE-FF, or AABBCCDDEEFF")
             exit(1)
-        return bytes.fromhex(m.replace(":", "").replace("-", ""))
-
-    if isinstance(mac, list):  # Handle list of MACs
-        return [format_mac(m) for m in mac]
+        
+        clean_mac = m.replace(":", "").replace("-", "").lower()
+        mac_bytes = [int(clean_mac[i:i+2], 16) for i in range(0, 12, 2)]
+        return struct.pack('!6B', *mac_bytes)
 
     return format_mac(mac)

