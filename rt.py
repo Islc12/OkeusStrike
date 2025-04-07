@@ -17,6 +17,10 @@
 import struct
 
 def rt_head():
-    rth = struct.pack('!8B', 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00)
+    v = struct.pack('B', 0x00)
+    pad = struct.pack('B', 0x00)
+    length = struct.pack('<H', 0x08)
+    prsnt = struct.pack('!4B', 0x00, 0x00, 0x00, 0x00)
+    rth = v + pad + length + prsnt
     # creates a radiotap header with the minimum length of 8 bytes padded to fill
-    return rth
+    return rth, v, pad, length, prsnt

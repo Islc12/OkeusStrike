@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # OkeusStrike - Advanced Deauthentication Attack Tool - input.py
 # Copyright (C) 2025 Richard Smith (Islc12)
 #
@@ -38,3 +36,24 @@ def reasoncode_input(reason):
 
     rc = reasoncode.get(reason)
     return rc
+
+def def_code(reason):
+    code_def = {
+    1: "Code 1: Unspecified reason.",
+    2: "Code 2: Previous authentication is no longer valid",
+    3: "Code 3: Station has left the Basic Service Set (BSS) or Extended Service Set (ESS)",
+    4: "Code 4: Inactivity timer expired",
+    5: "Code 5: Disassociated due to insufficient resources at the AP",
+    6: "Code 6: Class 2 frame received from a nonauthenticated station",
+    7: "Code 7: Class 3 frame received from a nonassociated station",
+    8: "Code 8: Station has left the BSS or ESS (disassociation)",
+    9: "Code 9: Station is attempted to authenticate with an AP that doesn't support the authentication protocol",
+    10: "Code 10: Specified timeout",
+    11: "Code 11: Group Key Update Timeout",
+    12: "Code 12: Unspecified reason (disassociation)",
+    13: "Code 13: Invalid information",
+    14: "Code 14: Incompatible parameters"
+    }
+
+    cd = code_def.get(reason)
+    return cd
