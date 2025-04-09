@@ -18,6 +18,7 @@ import struct
 
 def reasoncode_input(reason):
     reasoncode = {
+    0: struct.pack('H', 0x00), # No reason code
     1: struct.pack('<H', 0x01), # - Code 1: Unspecified reason. - \x00\x01
     2: struct.pack('<H', 0x02), # - Code 2: Previous authentication is no longer valid. - \x00\x02
     3: struct.pack('<H', 0x03), # - Code 3: Station has left the Basic Service Set (BSS) or Extended Service Set (ESS). - \x00\x03
@@ -39,6 +40,7 @@ def reasoncode_input(reason):
 
 def def_code(reason):
     code_def = {
+    0: "No reason code assigned **** MALFORMED PACKET ERROR ****",
     1: "Code 1: Unspecified reason.",
     2: "Code 2: Previous authentication is no longer valid",
     3: "Code 3: Station has left the Basic Service Set (BSS) or Extended Service Set (ESS)",

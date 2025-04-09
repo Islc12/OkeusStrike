@@ -48,16 +48,16 @@ def parse_arguments():
 
     parser.add_argument("--time", dest="time", type=int, metavar="<TIME_IN_MS>", help="Time delay between frames in milliseconds")
 
-    parser.add_argument("--flood", dest="flood", action="store_true", help="Flood attack, cannot be used with --count, floods until interupt")
+    parser.add_argument("-f", "--flood", dest="flood", action="store_true", help="Flood attack, cannot be used with --count, floods until interupt")
 
-    parser.add_argument("--count", dest="count", type=int, metavar="<INT>", help="Number of frames to send, cannot be used with --flood")
+    parser.add_argument("-c", "--count", dest="count", type=int, metavar="<INT>", help="Number of frames to send, cannot be used with --flood")
 
-    parser.add_argument("--fragment-size", dest="fragment_size", choices=range(1,16), metavar="<INT>", type=int, help="Fragment size")
-    parser.add_argument("--sequence", dest="sequence", choices=range(1,4096), type=int, metavar="<SEQUENCE_NUMBER>", help="Sequence number for deauthentication frame, default is None")
+    parser.add_argument("--fragment", dest="fragment", action="store_true", help="Fragment size")
+    parser.add_argument("--sequence", dest="sequence", action="store_true", help="Sequence number for deauthentication frame, default is None")
 
-    parser.add_argument("--reason-code", choices=range(1,15), metavar="<REASON_CODE>", dest="reason_code", type=int, help="Reason code for deauthentication")
+    parser.add_argument("-r", "--reason", choices=range(1,15), metavar="<REASON_CODE>", dest="reason_code", type=int, help="Reason code for deauthentication")
 
-    parser.add_argument("--duration", dest="duration", metavar="<TIME_IN_MS>", type=int, help="Duration of the attack in milliseconds")
+    parser.add_argument("--duration", dest="duration", metavar="<TIME_IN_MS>", type=int, help="Duration of the attack in seconds")
 
     return parser.parse_args()
 
