@@ -47,7 +47,6 @@ def parse_arguments():
     parser.add_argument("-b", "--broadcast", action="store_true", dest="broadcast", help="Broadcast attack")
 
     parser.add_argument("--delay", dest="delay", type=int, metavar="<TIME_IN_MS>", help="Time delay between frames in milliseconds")
-    parser.add_argument("--run-time", dest="runtime", type=int, metavar="<TIME_IN_S>", help="Total time for the program to run")
 
     parser.add_argument("-f", "--flood", dest="flood", action="store_true", help="Flood attack, cannot be used with --count, floods until interupt")
 
@@ -59,7 +58,7 @@ def parse_arguments():
     parser.add_argument("--random-frag", dest="randomfrag", action="store_true", help="Randomize fragmentation")
     parser.add_argument("--auto-seq", dest="autoseq", action="store_true", help="Automatically increment sequence control")
 
-    parser.add_argument("-r", "--reason", choices=range(1,15), metavar="<REASON_CODE>", dest="reason_code", type=int, help="Reason code for deauthentication")
+    parser.add_argument("-r", "--reason", choices=range(1,67), metavar="<[1-66]>", dest="reason_code", type=int, help="Reason code for deauthentication")
 
     parser.add_argument("--duration", dest="duration", metavar="<[1-65535]>", choices=range(1,65536), type=int, help="Set duration bytes")
 

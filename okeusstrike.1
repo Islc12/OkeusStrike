@@ -58,14 +58,16 @@ OPTIONS
         Specifies that the deauthentication frames should be fragmented and will be fragmented based on a user supplied size in bytes.
 
     --random-frag
+        Automatically randomizes the fragmentation bits.
 
     --sequence <[1-4095]>
        Specifies the total number of fragmented frames to send from user input.
 
     --auto-seq
+        Automatically increments the sequence number.
 
-    --reason-code <[1-14]>
-        Specifies the reason code to use for the deauthentication frame, choices range from 1 to 14 inclusive.
+    --reason-code <[1-66]>
+        Specifies the reason code to use for the deauthentication frame, choices range from 1 to 66.
 
     --dry-run
         Conducts a dry run of the program, producing all output without actually sending any frames.
