@@ -46,18 +46,24 @@ def parse_arguments():
     parser.add_argument("-n", "--network", dest="net_bssid", type=str, metavar="<BSSID>", help="BSSID of the target network")
     parser.add_argument("-b", "--broadcast", action="store_true", dest="broadcast", help="Broadcast attack")
 
-    parser.add_argument("--time", dest="time", type=int, metavar="<TIME_IN_MS>", help="Time delay between frames in milliseconds")
+    parser.add_argument("--delay", dest="delay", type=int, metavar="<TIME_IN_MS>", help="Time delay between frames in milliseconds")
+    parser.add_argument("--run-time", dest="runtime", type=int, metavar="<TIME_IN_S>", help="Total time for the program to run")
 
     parser.add_argument("-f", "--flood", dest="flood", action="store_true", help="Flood attack, cannot be used with --count, floods until interupt")
 
     parser.add_argument("-c", "--count", dest="count", type=int, metavar="<INT>", help="Number of frames to send, cannot be used with --flood")
 
-    parser.add_argument("--fragment", dest="fragment", action="store_true", help="Fragment size")
-    parser.add_argument("--sequence", dest="sequence", action="store_true", help="Sequence number for deauthentication frame, default is None")
+    parser.add_argument("--fragment", dest="fragment", type=int, metavar="<[1-15]>", choices=range(1,16), help="Set fragmentation bits")
+    parser.add_argument("--sequence", dest="sequence", type=int, metavar="<[1-4095]>", choices=range(1,4096), help="Sequence number for deauthentication frame, default is None")
+
+    parser.add_argument("--random-frag", dest="randomfrag", action="store_true", help="Randomize fragmentation")
+    parser.add_argument("--auto-seq", dest="autoseq", action="store_true", help="Automatically increment sequence control")
 
     parser.add_argument("-r", "--reason", choices=range(1,15), metavar="<REASON_CODE>", dest="reason_code", type=int, help="Reason code for deauthentication")
 
-    parser.add_argument("--duration", dest="duration", metavar="<TIME_IN_MS>", type=int, help="Duration of the attack in seconds")
+    parser.add_argument("--duration", dest="duration", metavar="<[1-65535]>", choices=range(1,65536), type=int, help="Set duration bytes")
+
+    parser.add_argument("--dry-run", dest="dryrun", action="store_true", help="Runs OkeusStrike without sending packets")
 
     return parser.parse_args()
 

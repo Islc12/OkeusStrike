@@ -37,9 +37,11 @@ OPTIONS
     -b, --broadcast
        Specifies that the deauthentication attack should be broadcasted to all clients on the target network.
 
-    --time <time_in_ms>
+    --delay <time_in_ms>
         Specifies a time delay in milliseconds to wait between sending deauthentication packets. This option can be useful for slowing down the rate of
-        deauthentication frames being sent to the target. 
+        deauthentication frames being sent to the target.
+
+    --run-time <time_in_s>
 
     --flood
         Sends out a large number of deauthentication packets to the target, flooding them with deauthentication frames for a user specified duration of time.
@@ -49,11 +51,21 @@ OPTIONS
         Specifies a number specific number of deauthentication frames to send the target. The default is 5 deauthentication frames. This option cannot be used
         with --flood.
 
-    --fragment <bytes>
-        Specifies that the deauthentication frames should be fragmented and will be fragmented based on a user supplied size in bytes. 
+    --duration <[1-65535]>
+        Specifies the time in microseconds for the destination to wait before accessing the medium after receiving the frame.
 
-    --sequence <sequence_number>
+    --fragment <[1-15]>
+        Specifies that the deauthentication frames should be fragmented and will be fragmented based on a user supplied size in bytes.
+
+    --random-frag
+
+    --sequence <[1-4095]>
        Specifies the total number of fragmented frames to send from user input.
+
+    --auto-seq
 
     --reason-code <[1-14]>
         Specifies the reason code to use for the deauthentication frame, choices range from 1 to 14 inclusive.
+
+    --dry-run
+        Conducts a dry run of the program, producing all output without actually sending any frames.

