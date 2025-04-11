@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # OkeusStrike - Advanced Deauthentication Attack Tool - convert.py
 # Copyright (C) 2025 Richard Smith (Islc12)
 #

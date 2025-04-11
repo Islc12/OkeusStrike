@@ -41,10 +41,10 @@ see the progress and provide feedback.
 
 ** perform basic instructions first **
 
-- move `OkeusDocs` to their `/usr/share/doc/` directory
-`# mv OkeusDocs /usr/share/doc/`
+- move `README.md` and `LICENSE` to the `/usr/share/doc/` directory
+`# mv README.md LICENSE /usr/share/doc/`
 - move the man page to the man1 directory
-`# mv /usr/share/doc/OkeusDocs/okeus.1.gz /usr/share/man/man1/`
+`# mv okeus.1.gz /usr/share/man/man1/`
 - create a directory to move dependancies into
 `# mkdir /usr/lib/OkeusStrike`
 - move dependancies
