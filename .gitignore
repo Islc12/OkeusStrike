@@ -1,3 +1,4 @@
-CaptureFiles/
-Old_scripts/
-Outline.txt
+.Archive
+__pycache__
+config.sh
+

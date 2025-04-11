@@ -92,7 +92,7 @@ def reasoncode_input(reason):
 
 def def_code(reason):
     code_def = {
-        0: "No reason code assigned **** MALFORMED PACKET ERROR ****",
+        0: "No reason code assigned",
         1: "Unspecified reason",
         2: "Previous authentication no longer valid",
         3: "Deauthenticated because sending STA is leaving (or has left) IBSS or ESS",
@@ -132,11 +132,11 @@ def def_code(reason):
         37: "Requested from peer STA as it does not want to use the mechanism.",
         38: "Requested from peer STA as the STA received frames using the mechanism for which a setup is required.",
         39: "Requested from peer STA due to timeout.",
-        40: "N",
-        41: "N",
-        42: "N",
-        43: "N",
-        44: "N",
+        40: "Unknown",
+        41: "Unknown",
+        42: "Unknown",
+        43: "Unknown",
+        44: "Unknown",
         45: "Peer STA does not support the requested cipher suite.",
         46: "In a DLS teardown frame: The teardown was initiated by the DLS peer. In a Disassociation frame: Disassociated because authorized access limit reached.",
         47: "In a DLS teardown frame: The teardown was initiated by the AP. In a Disassociation frame: Disassociated due to external service requirements.",
