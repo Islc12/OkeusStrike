@@ -27,7 +27,7 @@ see the progress and provide feedback.
 ## Installation Instructions
 
 
-# Basic Install/Configuration
+### Basic Install/Configuration
 
 - Get the repository from github
 `$ git clone https://github.com/Islc12/OkeusStrike.git`
@@ -37,7 +37,7 @@ see the progress and provide feedback.
 `chmod u+x okeus`
 
 
-# Advanced Configuration
+### Advanced Configuration
 
 ** perform basic instructions first **
 
