@@ -111,17 +111,13 @@ def f_assem(args):
         print("Invalid argument, missing Address 3")
         exit(1)
 
-    if dry:
-        print("Conducting dry run, no frames will be sent.")
+    dr = "Conducting dry run, no frames will be sent."
 
-    if not source_mac and verbose:
-        print("Source Addres will use Network Address - MAC SPOOFING RECOMMENDED!!!")
+    src_n_v = "Source Addres will use Network Address - MAC SPOOFING RECOMMENDED!!!"
 
-    if verbose:
-        td = datetime.now().strftime("Today's Date: %Y-%m-%d\nCurrent Time: %H:%M:%S")
-        print(td)
+    td = datetime.now().strftime("Today's Date: %Y-%m-%d\nCurrent Time: %H:%M:%S")
 
-    return f_ctl, f_frag, f_dur, ct, src, net, ch
+    return f_ctl, f_frag, f_dur, ct, src, net, ch, td, dr, src_n_v
 
 def main():
     args = okeusargs.parse_arguments()
@@ -143,9 +139,25 @@ def main():
     autoseq = args.autoseq
     dry = args.dryrun
 
-    f_ctl, f_frag, f_dur, ct, src, net, ch = f_assem(args)
+    f_ctl, f_frag, f_dur, ct, src, net, ch, td, dr, src_n_v = f_assem(args)
     rad, vr, pad, rt_len, fp = radio.rt_head()
     df = rad + f_ctl + f_frag + f_dur + ct + src + net
+
+    if not dry:
+        try:
+            s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
+            s.bind((interface, 0))
+            if verbose:
+                print(s)
+        except OSError as es:
+            if es.errno == 19:
+                print("Unknown network interface")
+                exit(1)
+            else:
+                print(es)
+                exit(1)
+    elif dry:
+        print(dr)
 
     def reas():
         # Body
@@ -157,7 +169,6 @@ def main():
         return rc
 
     def fs():
-        # Sequence Control Field
         if not hasattr(fs, "sn"):
             fs.sn = 1
         if not (frag or seq_num or randfrag or autoseq):
@@ -193,6 +204,10 @@ def main():
 
     def verb():
         seq = fs()
+        print(td)
+        if not source_mac:
+            print(src_n_v)
+        print(f"Interface: {interface}")
         print("-" * 100)
         print(f"{'Frame composition'.center(100)}")
         print("-" * 100)
@@ -215,13 +230,6 @@ def main():
         if reason_code:
             print(f"Reason Code: {reason.reasoncode_input(reason_code).hex()} - {reason.def_code(reason_code)}")
         print("-" * 100)
-
-    if not dry:
-    # Open the socket
-        s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
-        if verbose:
-            print(s)
-        s.bind((interface, 0))
 
     r = reas()
 
