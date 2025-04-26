@@ -1,4 +1,4 @@
-# OkeusStrike - Advanced Deauthentication Attack Tool - rt.py
+# OkeusStrike - Advanced Deauthentication Attack Tool - body.py
 # Copyright (C) 2025 Richard Smith (Islc12)
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,10 +16,6 @@
 
 import struct
 
-def rt_head():
-    v = struct.pack('B', 0x00)
-    pad = struct.pack('B', 0x00)
-    length = struct.pack('<H', 0x08)
-    prsnt = struct.pack('4B', 0x00, 0x00, 0x00, 0x00)
-    rth = v + pad + length + prsnt
-    return rth, v, pad, length, prsnt
+def body_inject(num):
+	padding = struct.pack(f'{num}x')
+	return padding

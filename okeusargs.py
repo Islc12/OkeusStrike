@@ -18,15 +18,9 @@ import argparse
 
 class CustomHelpFormatter(argparse.HelpFormatter):
     def __init__(self, prog):
-        """
-        Adjusts the help text alignment.
-        """
-        super().__init__(prog, max_help_position=100)  # Ensures descriptions align correctly
+        super().__init__(prog, max_help_position=100)
 
     def _format_action_invocation(self, action):
-        """
-        Keeps metavar close to the option flag.
-        """
         if action.option_strings:
             option_str = ", ".join(action.option_strings)
             metavar = self._format_args(action, action.dest.upper()) if action.metavar else ""
@@ -41,9 +35,9 @@ def parse_arguments():
 
     parser.add_argument("-i", "--interface", dest="netinterface", required=True, metavar="<INTERFACE>", type=str, help="Network interface ID")
 
-    parser.add_argument("-d", "--dest", dest="dest", metavar="<DESTINATION>", type=str, help="Target destination MAC address(es)")
+    parser.add_argument("-d", "--dest", dest="dest", metavar="<DESTINATION_MAC>", type=str, help="Target destination MAC address(es)")
     parser.add_argument("-s", "--source", dest="ap_source", type=str, metavar="<SOURCE_MAC>", help="Source MAC address")
-    parser.add_argument("-n", "--network", dest="net_bssid", type=str, metavar="<BSSID>", help="BSSID of the target network")
+    parser.add_argument("-n", "--network", dest="net_bssid", type=str, metavar="<BSSID_MAC>", help="BSSID of the target network")
     parser.add_argument("-b", "--broadcast", action="store_true", dest="broadcast", help="Broadcast attack")
 
     parser.add_argument("--delay", dest="delay", type=int, metavar="<TIME_IN_MS>", help="Time delay between frames in milliseconds")
@@ -63,6 +57,8 @@ def parse_arguments():
     parser.add_argument("--duration", dest="duration", metavar="<[1-65535]>", choices=range(1,65536), type=int, help="Set duration bytes")
 
     parser.add_argument("--dry-run", dest="dryrun", action="store_true", help="Runs OkeusStrike without sending packets")
+
+    parser.add_argument("--body", dest="body_pad", metavar="<[1-1480]>", choices=range(1,1481), type=int, help="Pad frame body")
 
     return parser.parse_args()
 
