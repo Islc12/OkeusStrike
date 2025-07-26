@@ -19,3 +19,4 @@ import struct
 def body_inject(num):
 	padding = struct.pack(f'{num}x')
 	return padding
+
