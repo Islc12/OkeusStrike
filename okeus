@@ -63,7 +63,7 @@ def f_assem(args):
     frag or seq_num or reason or dur) and not (dest_mac or broadcast_attack):
         print("Error: target input required") # requires target input for most operations
         exit(1)
-    if (broadcast_attack or timedelay or frame_flood or num_frames or
+    if (broadcast_attack or dest_mac or timedelay or frame_flood or num_frames or
     frag or seq_num or reason_code or dur or randfrag or autoseq or dry) and not network_bssid:
         print("Error: network BSSID required") # requires network BSSID for most operations
         exit(1)
