@@ -37,7 +37,7 @@ def parse_arguments():
 
     parser.add_argument("-d", "--dest", dest="dest", metavar="<DESTINATION_MAC>", type=str, help="Target destination MAC address(es)")
     parser.add_argument("-s", "--source", dest="ap_source", type=str, metavar="<SOURCE_MAC>", help="Source MAC address")
-    parser.add_argument("-n", "--network", dest="net_bssid", type=str, metavar="<BSSID_MAC>", help="BSSID of the target network")
+    parser.add_argument("-n", "--network", dest="net_bssid", required=True, type=str, metavar="<BSSID_MAC>", help="BSSID of the target network")
     parser.add_argument("-b", "--broadcast", action="store_true", dest="broadcast", help="Broadcast attack")
 
     parser.add_argument("--delay", dest="delay", type=int, metavar="<TIME_IN_MS>", help="Time delay between frames in milliseconds")

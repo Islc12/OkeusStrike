@@ -16,15 +16,20 @@
 
 import re
 import struct
+import sys
+from exit import EXIT_INVALID_MAC, EXIT_MISSING_MAC
 
 def machex(mac):
     mac_regex = r"^([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}$|^[0-9a-fA-F]{12}$"  # Allow colon, dash, or plain format
 
     def format_mac(m):
+        if m is None:
+            print("Error: MAC address is missing")
+            sys.exit(EXIT_MISSING_MAC)
         if not re.match(mac_regex, m):
             print("Error: Invalid MAC address format")
             print("Correct format: AA:BB:CC:DD:EE:FF, AA-BB-CC-DD-EE-FF, or AABBCCDDEEFF")
-            exit(1)
+            sys.exit(EXIT_INVALID_MAC)
         
         clean_mac = m.replace(":", "").replace("-", "").lower()
         mac_bytes = [int(clean_mac[i:i+2], 16) for i in range(0, 12, 2)]

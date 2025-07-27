@@ -28,6 +28,7 @@ import sys
 import random
 import time
 import body
+import exit
 from datetime import datetime
 
 def f_assem(args):
@@ -53,26 +54,10 @@ def f_assem(args):
     if any(arg in sys.argv for arg in ("-h", "--help")):
         parser = argparse.ArgumentParser()
         parser.print_help()
-        sys.exit(0)
+        sys.exit(exit.EXIT_SUCCESS)
     if os.geteuid() != 0:
         print("ATTENTION: Script requires root privlages, please run as root")
-        exit(1)
-
-    # handle all illogical arguments
-    if (timedelay or frame_flood or num_frames or randfrag or autoseq or dry or
-    frag or seq_num or reason or dur) and not (dest_mac or broadcast_attack):
-        print("Error: target input required") # requires target input for most operations
-        exit(1)
-    if (broadcast_attack or dest_mac or timedelay or frame_flood or num_frames or
-    frag or seq_num or reason_code or dur or randfrag or autoseq or dry) and not network_bssid:
-        print("Error: network BSSID required") # requires network BSSID for most operations
-        exit(1)
-    if (broadcast_attack and dest_mac):
-        print("Invalid arguments, too many addresses in Address 1")
-        exit(1)
-    if not (broadcast_attack or dest_mac):
-        print("Invalid input, need address 1 field")
-        exit(1)
+        sys.exit(exit.EXIT_NOT_ROOT)
     
     # starts the 80211 mac header, deauth frame byte
     f_ctl = struct.pack('B', 0xC0)
@@ -95,6 +80,12 @@ def f_assem(args):
         f_dur = struct.pack('<H', dur & 0xFFFF)
 
     # Address 1 field
+    if not (broadcast_attack or dest_mac):
+        print("Invalid input, need address 1 field")
+        sys.exit(exit.EXIT_NO_TARGET)
+    if (broadcast_attack and dest_mac):
+        print("Invalid arguments, too many addresses in Address 1")
+        sys.exit(exit.EXIT_TOO_MANY_ADDR1)
     if broadcast_attack:
         ct = struct.pack('!6B', 0xFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF)
     elif dest_mac:
@@ -103,6 +94,7 @@ def f_assem(args):
     # Address 2 field, if not given Address 3 fills
     if not source_mac:
         src = convert.machex(network_bssid)
+        src_n_v = "Source Addres will use Network Address"
     elif source_mac:
         src = convert.machex(source_mac)
 
@@ -111,11 +103,9 @@ def f_assem(args):
         net = convert.machex(network_bssid)
     if not network_bssid:
         print("Invalid argument, missing Address 3")
-        exit(1)
+        sys.exit(exit.EXIT_NO_NETWORKBSSID)
 
     dr = "Conducting dry run, no frames will be sent."
-
-    src_n_v = "Source Addres will use Network Address - MAC SPOOFING RECOMMENDED!!!"
 
     td = datetime.now().strftime("Today's Date: %Y-%m-%d\nCurrent Time: %H:%M:%S")
 
@@ -155,10 +145,10 @@ def main():
         except OSError as es:
             if es.errno == 19:
                 print("Unknown network interface")
-                exit(1)
+                sys.exit(exit.EXIT_UNKNOWN_INTERFACE)
             else:
                 print(es)
-                exit(1)
+                sys.exit(exit.EXIT_OSERROR)
     elif dry:
         print(dr)
 
@@ -342,6 +332,7 @@ def main():
                     print(f"Socket {s} closed")
                 s.close()
             print("Completed!!!")
+            sys.exit(exit.EXIT_SUCCESS)
 
 if __name__ == "__main__":
     main()
