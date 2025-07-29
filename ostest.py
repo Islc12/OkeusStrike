@@ -1,6 +1,7 @@
 import platform
+system = platform.system()
 
-if platform.system() != 'Linux':
-    print("not linux")
+if system != 'Linux':
+    print(f"{system} is not Linux")
 
 # this needs to be added as a check before sudo.
