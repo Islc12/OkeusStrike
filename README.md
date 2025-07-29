@@ -30,11 +30,17 @@ see the progress and provide feedback.
 ### Basic Install/Configuration
 
 - Get the repository from github
-`$ git clone https://github.com/Islc12/OkeusStrike.git`
+```bash
+$ git clone https://github.com/Islc12/OkeusStrike.git
+```
 - Navigate to the cloned repository
-`cd OkeusStrike`
+```bash
+$ cd OkeusStrike
+```
 - Add execute permissions
-`chmod u+x okeus`
+```bash
+$ chmod u+x okeus
+```
 
 
 ### Advanced Configuration
