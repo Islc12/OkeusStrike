@@ -29,7 +29,17 @@ import random
 import time
 import body
 import exit
+import platform
 from datetime import datetime
+
+def sys_checks():
+    if platform.system() != 'Linux':
+        print("ATTENTION: This program is intended only to be run on GNU/Linux")
+        sys.exit(exit.EXIT_NOT_LINUX)
+
+    if os.geteuid() != 0:
+        print("ATTENTION: Script requires root privlages, please run as root")
+        sys.exit(exit.EXIT_NOT_ROOT)
 
 def f_assem(args):
     # Parse command-line arguments
@@ -55,9 +65,7 @@ def f_assem(args):
         parser = argparse.ArgumentParser()
         parser.print_help()
         sys.exit(exit.EXIT_SUCCESS)
-    if os.geteuid() != 0:
-        print("ATTENTION: Script requires root privlages, please run as root")
-        sys.exit(exit.EXIT_NOT_ROOT)
+
     
     # starts the 80211 mac header, deauth frame byte
     f_ctl = struct.pack('B', 0xC0)
@@ -135,6 +143,8 @@ def main():
     f_ctl, f_frag, f_dur, ct, src, net, ch, td, dr, src_n_v = f_assem(args)
     rad, vr, pad, rt_len, fp = radio.rt_head()
     df = rad + f_ctl + f_frag + f_dur + ct + src + net
+
+    sys_checks()
 
     if not dry:
         try:
