@@ -21,29 +21,16 @@ import okeusargs
 import convert
 import reason
 import radio
-import os
 import struct
 import sys 
 import random
 import time
 import body
 import exit
-import platform
+import syschecks
 from datetime import datetime
 
 args = okeusargs.parse_arguments()
-
-def sys_checks():
-    if platform.system() != 'Linux':
-        print("ATTENTION: This program is intended only to be run on GNU/Linux")
-        sys.exit(exit.EXIT_NOT_LINUX)
-    elif any(arg in sys.argv for arg in ("-h", "--help")):
-        parser = argparse.ArgumentParser()
-        parser.print_help()
-        sys.exit(exit.EXIT_SUCCESS)
-    elif os.geteuid() != 0:
-        print("ATTENTION: Script requires root privlages, please run as root")
-        sys.exit(exit.EXIT_NOT_ROOT)
  
 def f_assem(args):
     dest_mac = args.dest
@@ -204,7 +191,7 @@ def main():
     num_frames = args.count
     timedelay = args.delay
 
-    sys_checks()
+    syschecks.sys_checks()
 
     f_ctl, f_frag, f_dur, ct, src, net, ch, td, dr, src_n_v = f_assem(args)
     rad, vr, pad, rt_len, fp = radio.rt_head()
