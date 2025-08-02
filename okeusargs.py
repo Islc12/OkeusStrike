@@ -1,4 +1,4 @@
-# OkeusStrike - Advanced Deauthentication Attack Tool - okeusarguments.py
+# OkeusStrike - Advanced Deauthentication Attack Tool - okeusargs.py
 # Copyright (C) 2025 Richard Smith (Islc12)
 #
 # This program is free software: you can redistribute it and/or modify

@@ -1,4 +1,4 @@
-# OkeusStrike - Advanced Deauthentication Attack Tool - input.py
+# OkeusStrike - Advanced Deauthentication Attack Tool - syschecks.py
 # Copyright (C) 2025 Richard Smith (Islc12)
 #
 # This program is free software: you can redistribute it and/or modify
