@@ -23,11 +23,11 @@ import reason
 import radio
 import struct
 import sys 
-import random
 import time
 import body
 import exit
 import syschecks
+import fragseq
 from datetime import datetime
 
 args = okeusargs.parse_arguments()
@@ -93,45 +93,6 @@ def f_assem(args):
 
     return f_ctl, f_frag, f_dur, ct, src, net, ch, td, dr, src_n_v
 
-def fs(args):
-    frag = args.fragment
-    seq_num = args.sequence
-    randfrag = args.randomfrag
-    autoseq = args.autoseq
-
-    if not hasattr(fs, "sn"):
-        fs.sn = 1
-    if not (frag or seq_num or randfrag or autoseq):
-        seq = struct.pack('<H', 0x00)
-
-    elif randfrag and not (frag or seq_num or autoseq):
-        rf = random.randint(1, 14)
-        seq = struct.pack('<H', rf & 0x0F)
-    elif autoseq and not (frag or seq_num or randfrag):
-        seq = struct.pack('<H', (fs.sn << 4) & 0xFFF0)
-        fs.sn += 1
-    elif (autoseq and randfrag) and not (seq_num or frag):
-        rf = random.randint(1, 14)
-        if rf >= 8:
-            seq = struct.pack('<H', ((fs.sn << 4) & 0xFFF0) | (rf & 0x0F))
-            fs.sn += 1
-        else:
-            seq = struct.pack('<H', (fs.sn << 4) & 0xFFF0)
-    elif (randfrag and seq_num) and not (frag or autoseq):
-        rf = random.randint(1, 14)
-        seq = struct.pack('<H', ((seq_num << 4) & 0xFFF0) | (rf & 0x0F))
-    elif frag and not (seq_num or randfrag or autoseq):
-        seq = struct.pack('<H', frag & 0x0F)
-    elif (frag and autoseq) and not (randfrag or seq_num):
-        seq = struct.pack('<H', ((fs.sn << 4) & 0xFFF0) | (frag & 0x0F))
-        fs.sn += 1
-    elif (frag and seq_num) and not (randfrag or autoseq):
-        seq = struct.pack('<H', ((seq_num << 4) & 0xFFF0) | (frag & 0x0F))
-    elif (seq_num) and not (frag or randfrag or autoseq):
-        seq = struct.pack('<H', ((seq_num << 4) & 0xFFF0) )
-
-    return seq
-
 def verb(args):
     interface = args.netinterface
     source_mac = args.ap_source
@@ -139,7 +100,7 @@ def verb(args):
     randfrag = args.randomfrag
     autoseq = args.autoseq
     body_bytes = args.body_pad
-    seq = fs(args)
+    sq = fragseq.fs(frag = args.fragment, seq_num = args.sequence, randfrag = args.randomfrag, autoseq = args.autoseq)
     f_ctl, f_frag, f_dur, ct, src, net, ch, td, dr, src_n_v = f_assem(args)
     rad, vr, pad, rt_len, fp = radio.rt_head()
 
@@ -154,14 +115,14 @@ def verb(args):
     print(f"Radiotap pad: {pad.hex()}")
     print(f"Radiotap length: {rt_len.hex()}")
     print(f"Radiotap fields present: {fp.hex()}")
-    print(f"Frame type: {f_ctl.hex().upper()}")
+    print(f"Frame type: {f_ctl.hex().upper()} (Deauthentication)")
     print(f"Fragmentation set: {f_frag.hex()} - type: {ch}")
     print(f"Duration: {f_dur.hex().upper()}")
     print(f"Destination: {ct.hex().upper()}")
     print(f"Source: {src.hex().upper()}")
     print(f"Network: {net.hex().upper()}")
     if not (autoseq or randfrag):
-        print(f"Sequence Control: {seq.hex().upper()}")
+        print(f"Sequence Control: {sq.hex().upper()}")
     if (autoseq or randfrag):
         print("Sequence Control: DYNAMIC")
     if not reason_code:
@@ -187,6 +148,8 @@ def main():
     f_ctl, f_frag, f_dur, ct, src, net, ch, td, dr, src_n_v = f_assem(args)
     rad, vr, pad, rt_len, fp = radio.rt_head()
     df = rad + f_ctl + f_frag + f_dur + ct + src + net
+    r = reason.reas(reason_code)
+    sq = fragseq.fs(frag = args.fragment, seq_num = args.sequence, randfrag = args.randomfrag, autoseq = args.autoseq)
 
     if not dry:
         try:
@@ -204,8 +167,6 @@ def main():
     elif dry:
         print(dr)
 
-    r = reason.reas(reason_code)
-    sq = fs(args)
     if body_bytes:
         b = body.body_inject(body_bytes)
         frame = df + sq + r + b
