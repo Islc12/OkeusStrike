@@ -87,8 +87,7 @@ def reasoncode_input(reason):
     66: struct.pack('<H', 0x42),
     }
 
-    rc = reasoncode.get(reason)
-    return rc
+    return reasoncode.get(reason)
 
 def def_code(reason):
     code_def = {
@@ -161,5 +160,10 @@ def def_code(reason):
         66: "The mesh STA performs channel switch with unspecified reason."
         }
 
-    cd = code_def.get(reason)
-    return cd
+    return code_def.get(reason)
+
+def reas(reason):
+    if not reason:
+        return reasoncode_input(0)
+    elif reason:
+        return reasoncode_input(reason)

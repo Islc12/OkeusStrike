@@ -93,16 +93,6 @@ def f_assem(args):
 
     return f_ctl, f_frag, f_dur, ct, src, net, ch, td, dr, src_n_v
 
-def reas(args):
-    reason_code = args.reason_code
-
-    if not reason_code:
-        rc = reason.reasoncode_input(0)
-    elif reason_code:
-        rc = reason.reasoncode_input(reason_code)
-
-    return rc
-
 def fs(args):
     frag = args.fragment
     seq_num = args.sequence
@@ -190,6 +180,7 @@ def main():
     frame_flood = args.flood
     num_frames = args.count
     timedelay = args.delay
+    reason_code = args.reason_code
 
     syschecks.sys_checks()
 
@@ -213,7 +204,7 @@ def main():
     elif dry:
         print(dr)
 
-    r = reas(args)
+    r = reason.reas(reason_code)
     sq = fs(args)
     if body_bytes:
         b = body.body_inject(body_bytes)
