@@ -17,18 +17,21 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import socket
-import okeusargs
-import convert
-import reason
-import radio
-import struct
 import sys 
 import time
-import body
-import exit
-import syschecks
-import fragseq
+import struct
+
 from datetime import datetime
+from src import (
+    body,
+    convert,
+    exit,
+    fragseq,
+    okeusargs,
+    radio,
+    reason,
+    syschecks,
+)
 
 args = okeusargs.parse_arguments()
  

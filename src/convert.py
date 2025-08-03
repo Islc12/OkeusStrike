@@ -17,7 +17,7 @@
 import re
 import struct
 import sys
-from exit import EXIT_INVALID_MAC, EXIT_MISSING_MAC
+from . import exit
 
 def machex(mac):
     mac_regex = r"^([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}$|^[0-9a-fA-F]{12}$"  # Allow colon, dash, or plain format

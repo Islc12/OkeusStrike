@@ -16,8 +16,8 @@
 
 import sys
 import platform
-import exit
 import os
+from . import exit
 
 def sys_checks():
     if platform.system() != 'Linux':
