@@ -20,7 +20,6 @@ import socket
 import sys 
 import time
 import struct
-
 from datetime import datetime
 from src import (
     body,
@@ -32,8 +31,10 @@ from src import (
     reason,
     syschecks,
 )
+from images import okeus_ascii
 
 args = okeusargs.parse_arguments()
+okeus_ascii.art()
  
 def f_assem(args):
     dest_mac = args.dest
@@ -107,6 +108,7 @@ def verb(args):
     f_ctl, f_frag, f_dur, ct, src, net, ch, td, dr, src_n_v = f_assem(args)
     rad, vr, pad, rt_len, fp = radio.rt_head()
 
+    print("-" * 100)
     print(td)
     if not source_mac:
         print(src_n_v)
