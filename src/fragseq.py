@@ -18,6 +18,8 @@ import struct
 import random
 
 def fs(frag=None, seq_num=None, randfrag=False, autoseq=False):
+    # upgrade this to a match case statement to clean it up
+    
     if not hasattr(fs, "sn"):
         fs.sn = 1
     if all(x is None for x in (frag, seq_num)) and not (randfrag or autoseq):
