@@ -59,7 +59,7 @@ def f_assem(dest_mac=None, broadcast_attack=False, source_mac=None, network_bssi
     match source_mac:
         case None:
             src = convert.machex(network_bssid)
-            src_n_v = "Source Address (Address 2) field will use Network Address (Address 3 field)"
+            return src_n_v = "Source Address (Address 2) field will use Network Address (Address 3 field)"
         case _:
             src = convert.machex(source_mac)
 
@@ -71,4 +71,4 @@ def f_assem(dest_mac=None, broadcast_attack=False, source_mac=None, network_bssi
         case _:
             net = convert.machex(network_bssid)
 
-    return f_ctl, f_frag, f_dur, ct, src, net, ch, src_n_v
+    return f_ctl, f_frag, f_dur, ct, src, net, ch
