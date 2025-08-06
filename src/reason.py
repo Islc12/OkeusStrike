@@ -157,13 +157,14 @@ def def_code(reason):
         63: "The mesh STA determines that the link to the next hop of an active path in its forwarding information is no longer usable.",
         64: "The deauthentication frame was sent because the MAC address of the STA already exists in the mesh BSS. See 10.3.6.",
         65: "The mesh STA performs channel switch to meet regulatory requirements.",
-        66: "The mesh STA performs channel switch with unspecified reason."
+        66: "The mesh STA performs channelb switch with unspecified reason."
         }
 
     return code_def.get(reason)
 
 def reas(reason):
-    if not reason:
-        return reasoncode_input(0)
-    elif reason:
-        return reasoncode_input(reason)
+    match reason:
+        case None:
+            return reasoncode_input(0)
+        case _:
+            return reasoncode_input(reason)

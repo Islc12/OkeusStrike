@@ -16,6 +16,11 @@
 
 import struct
 
+# redevelop this to accept either an int for the num of bytes or to accept both an int and a byte value.
 def body_inject(num):
-	padding = struct.pack(f'{num}x')
-	return padding
+	match num:
+		case None:
+			return None
+		case _:
+			padding = struct.pack(f'{num}x')
+			return padding
