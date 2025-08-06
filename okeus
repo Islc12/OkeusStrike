@@ -49,7 +49,9 @@ def main():
 
     syschecks.sys_checks()
 
-    f_ctl, f_frag, f_dur, ct, src, net, ch, src_n_v = assemble.f_assem(dest_mac=args.dest, broadcast_attack=args.broadcast, source_mac=args.ap_source, network_bssid=args.net_bssid, frag=args.fragment, dur=args.duration, randfrag=args.randomfrag)
+    f_ctl, f_frag, f_dur, ct, src, net, ch = assemble.f_assem(dest_mac=args.dest, broadcast_attack=args.broadcast, source_mac=args.ap_source, network_bssid=args.net_bssid, frag=args.fragment, dur=args.duration, randfrag=args.randomfrag)
+    if args.ap_source:
+        src_n_v = assemble.f_assem(source_mac=args.ap_source)
     radiotap_header, it_version, it_pad, it_len, it_present = radio.ieee80211_radiotap_header()
     df = radiotap_header + f_ctl + f_frag + f_dur + ct + src + net
     r = reason.reas(args.reason_code)
