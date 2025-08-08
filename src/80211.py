@@ -66,6 +66,9 @@ class Dot11Frame:
         else:
             self.addr3 = convert.machex(self.network_bssid)
 
+### this is literally just copy and paste from other files, we'll actually do something with it in a little bit. For now, sleep...
+
+
     def seq_control_field(self):
         # upgrade this to a match case statement to clean it up
         
